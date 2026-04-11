@@ -8,4 +8,4 @@
  * ⚠️  Após fazer o deploy do backend no Render, atualize esta linha,
  *     faça commit e push. O frontend vai recarregar automaticamente.
  */
-const API_BASE = "http://localhost:8000";
+const API_BASE = "https://nutriai-72dq.onrender.com";
