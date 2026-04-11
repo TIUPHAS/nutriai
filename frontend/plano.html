@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>NutriAI · Gerador de Plano Alimentar | Plano Personalizado com IA</title>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --black-pearl: #0D0F0E;
+      --black-deep: #111413;
+      --black-mid: #181C1A;
+      --black-surface: #1F2421;
+      --black-border: #2A302C;
+      
+      --green-100: #C8F5D8;
+      --green-200: #8EEAB0;
+      --green-400: #3DD68C;
+      --green-500: #22C76E;
+      --green-600: #16A35A;
+      --green-800: #0D6B3D;
+      
+      --white: #F4F7F5;
+      --white-dim: #B8C4BC;
+      --white-muted: #7A8B80;
+      
+      --orange-warning: #E6A017;
+      --purple-accent: #A855F7;
+      
+      --font-head: 'Space Grotesk', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      
+      --shadow-glow: 0 8px 30px rgba(34, 199, 110, 0.08);
+      --shadow-glow-strong: 0 0 20px rgba(34, 199, 110, 0.15);
+      --transition-smooth: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+
+    body {
+      background: var(--black-pearl);
+      color: var(--white);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 20% 30%, rgba(61, 214, 140, 0.04), transparent 60%),
+                  radial-gradient(circle at 80% 70%, rgba(34, 199, 110, 0.03), transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Header */
+    .plan-header {
+      background: var(--black-mid);
+      border-bottom: 1px solid var(--black-border);
+      padding: 1.2rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+    }
+    .header-title h1 {
+      font-family: var(--font-head);
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .header-title h1 span {
+      color: var(--green-400);
+    }
+    .header-title p {
+      font-size: 0.7rem;
+      color: var(--white-muted);
+    }
+    .ai-badge {
+      background: rgba(61, 214, 140, 0.1);
+      padding: 0.4rem 1rem;
+      border-radius: 40px;
+      font-size: 0.7rem;
+      border: 1px solid rgba(61, 214, 140, 0.2);
+    }
+    .ai-badge i {
+      margin-right: 0.3rem;
+      color: var(--green-400);
+    }
+
+    /* Container */
+    .plan-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Formulário de configuração */
+    .config-card {
+      background: var(--black-mid);
+      border: 1px solid var(--black-border);
+      border-radius: 32px;
+      padding: 1.8rem;
+      margin-bottom: 2rem;
+      transition: var(--transition-smooth);
+    }
+    .config-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .input-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--white-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .input-label i {
+      color: var(--green-400);
+    }
+    .input-field, .select-field {
+      background: var(--black-surface);
+      border: 1px solid var(--black-border);
+      border-radius: 16px;
+      padding: 0.8rem 1rem;
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+    .input-field:focus, .select-field:focus {
+      border-color: var(--green-500);
+      box-shadow: 0 0 0 3px rgba(34, 199, 110, 0.1);
+    }
+    .radio-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 0.3rem;
+    }
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+    }
+    .radio-option input {
+      accent-color: var(--green-500);
+      width: 16px;
+      height: 16px;
+    }
+    .radio-option label {
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .generate-btn {
+      background: linear-gradient(95deg, var(--green-500), var(--green-600));
+      border: none;
+      border-radius: 20px;
+      padding: 1rem 2rem;
+      color: var(--black-pearl);
+      font-family: var(--font-head);
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.8rem;
+      margin-top: 1.5rem;
+      width: 100%;
+    }
+    .generate-btn:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.05);
+      box-shadow: 0 8px 20px rgba(34, 199, 110, 0.3);
+    }
+    .generate-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Loading */
+    .loading-overlay {
+      display: none;
+      text-align: center;
+      padding: 3rem;
+    }
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid var(--black-border);
+      border-top-color: var(--green-500);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Plano gerado */
+    .plan-result {
+      display: none;
+      animation: fadeSlideUp 0.5s ease;
+    }
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Resumo do plano */
+    .plan-summary {
+      background: linear-gradient(135deg, var(--black-mid), var(--black-surface));
+      border: 1px solid var(--green-800);
+      border-radius: 32px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .summary-item {
+      text-align: center;
+      flex: 1;
+    }
+    .summary-value {
+      font-family: var(--font-head);
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--green-400);
+    }
+    .summary-label {
+      font-size: 0.7rem;
+      color: var(--white-muted);
+    }
+
+    /* Dias da semana */
+    .week-tabs {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--black-border);
+      padding-bottom: 0.5rem;
+    }
+    .day-tab {
+      background: var(--black-surface);
+      border: 1px solid var(--black-border);
+      border-radius: 40px;
+      padding: 0.5rem 1.2rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+    .day-tab:hover {
+      border-color: var(--green-500);
+    }
+    .day-tab.active {
+      background: var(--green-500);
+      color: var(--black-pearl);
+      border-color: var(--green-500);
+      font-weight: 600;
+    }
+
+    /* Card de refeição */
+    .meals-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .meal-card {
+      background: var(--black-mid);
+      border: 1px solid var(--black-border);
+      border-radius: 24px;
+      overflow: hidden;
+    }
+    .meal-header {
+      background: var(--black-surface);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      border-bottom: 1px solid var(--black-border);
+    }
+    .meal-header i {
+      font-size: 1.3rem;
+      color: var(--green-400);
+    }
+    .meal-header h3 {
+      font-family: var(--font-head);
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    .meal-content {
+      padding: 1.2rem 1.5rem;
+    }
+    .meal-food {
+      font-size: 0.9rem;
+      color: var(--white-dim);
+      margin-bottom: 0.5rem;
+      line-height: 1.5;
+    }
+    .meal-nutrition {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 0.8rem;
+      padding-top: 0.8rem;
+      border-top: 1px solid var(--black-border);
+      font-size: 0.7rem;
+      color: var(--white-muted);
+    }
+    .meal-nutrition span strong {
+      color: var(--green-400);
+    }
+    .recipe-link {
+      margin-top: 0.8rem;
+      font-size: 0.7rem;
+      color: var(--green-400);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: var(--transition-smooth);
+    }
+    .recipe-link:hover {
+      color: var(--green-500);
+      gap: 0.5rem;
+    }
+
+    /* Substituições */
+    .substitutions {
+      background: var(--black-surface);
+      border-radius: 20px;
+      padding: 1rem;
+      margin-top: 1.5rem;
+    }
+    .substitutions h4 {
+      font-size: 0.8rem;
+      margin-bottom: 0.8rem;
+      color: var(--orange-warning);
+    }
+    .substitutions p {
+      font-size: 0.75rem;
+      color: var(--white-dim);
+      line-height: 1.5;
+    }
+
+    /* Botões de ação */
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      justify-content: flex-end;
+    }
+    .action-btn {
+      background: var(--black-surface);
+      border: 1px solid var(--black-border);
+      border-radius: 14px;
+      padding: 0.7rem 1.5rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .action-btn:hover {
+      border-color: var(--green-500);
+      background: rgba(34, 199, 110, 0.05);
+    }
+
+    /* Toast */
+    .toast-msg {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--green-600);
+      color: white;
+      padding: 0.7rem 1.5rem;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      z-index: 1000;
+      animation: fadeUp 0.3s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      .plan-container { padding: 1rem; }
+      .config-grid { grid-template-columns: 1fr; }
+      .plan-summary { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="plan-header">
+  <div class="header-left">
+    <svg class="logo-icon" viewBox="0 0 80 80" fill="none">
+      <rect width="80" height="80" rx="20" fill="#1A2420"/>
+      <path d="M18 58V22" stroke="#F4F7F5" stroke-width="6" stroke-linecap="round"/>
+      <path d="M62 58V22" stroke="#F4F7F5" stroke-width="6" stroke-linecap="round"/>
+      <path d="M18 22L40 44" stroke="#F4F7F5" stroke-width="6" stroke-linecap="round"/>
+      <ellipse cx="50" cy="33" rx="13" ry="7" transform="rotate(-38 50 33)" fill="#22C76E" opacity="0.95"/>
+      <circle cx="62" cy="22" r="5" fill="#3DD68C"/>
+    </svg>
+    <div class="header-title">
+      <h1>Plano <span>Alimentar</span></h1>
+      <p>Gerador inteligente com IA · Personalizado para você</p>
+    </div>
+  </div>
+  <div class="ai-badge">
+    <i class="fas fa-microchip"></i> NutriAI Engine v2.0
+  </div>
+</div>
+
+<div class="plan-container">
+  <!-- Card de configuração -->
+  <div class="config-card">
+    <div class="config-grid">
+      <div class="input-group">
+        <label class="input-label"><i class="fas fa-user"></i> Nome / Identificação</label>
+        <input type="text" id="userName" class="input-field" placeholder="Ex: Ana" value="Ana">
+      </div>
+      <div class="input-group">
+        <label class="input-label"><i class="fas fa-bullseye"></i> Objetivo Principal</label>
+        <div class="radio-group" id="goalGroup">
+          <label class="radio-option"><input type="radio" name="goal" value="emagrecer" checked> <label>🔥 Emagrecer</label></label>
+          <label class="radio-option"><input type="radio" name="goal" value="manter"> <label>⚖️ Manter peso</label></label>
+          <label class="radio-option"><input type="radio" name="goal" value="ganhar"> <label>💪 Ganhar massa</label></label>
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label"><i class="fas fa-utensils"></i> Preferências alimentares</label>
+        <select id="dietPref" class="select-field">
+          <option value="onivoro">Onívoro (sem restrições)</option>
+          <option value="vegetariano">Vegetariano (sem carne)</option>
+          <option value="vegano">Vegano (sem nada animal)</option>
+          <option value="lowcarb">Low Carb (reduz carboidratos)</option>
+          <option value="sem gluten">Sem glúten</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label class="input-label"><i class="fas fa-ban"></i> Restrições / Alergias</label>
+        <input type="text" id="restrictions" class="input-field" placeholder="Ex: lactose, frutos secos, etc">
+      </div>
+    </div>
+    <button class="generate-btn" id="generatePlanBtn">
+      <i class="fas fa-magic"></i> Gerar Plano Personalizado com IA
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <p><i class="fas fa-brain"></i> IA analisando seu perfil e criando plano alimentar...</p>
+  </div>
+
+  <!-- Resultado do plano -->
+  <div class="plan-result" id="planResult">
+    <div class="plan-summary" id="planSummary"></div>
+    
+    <div class="week-tabs" id="weekTabs"></div>
+    
+    <div class="meals-container" id="mealsContainer"></div>
+    
+    <div class="substitutions" id="substitutionsBox">
+      <h4><i class="fas fa-exchange-alt"></i> Substituições sugeridas</h4>
+      <p id="substitutionsText"></p>
+    </div>
+    
+    <div class="action-buttons">
+      <button class="action-btn" id="downloadPlanBtn"><i class="fas fa-download"></i> Baixar plano (PDF)</button>
+      <button class="action-btn" id="printPlanBtn"><i class="fas fa-print"></i> Imprimir</button>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+  <script>
+  // Dados do plano gerado
+  let currentPlan = null;
+  let currentDay = 0;
+  const weekDays = ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'];
+
+  // Gerador de plano alimentar simulado com IA
+  function generateMealPlan(userData) {
+    const { name, goal, dietPref, restrictions } = userData;
+    
+    // Base de dados de alimentos por objetivo
+    const mealOptions = {
+      emagrecer: {
+        cafe: ["Café da manhã: 2 ovos mexidos + 1 fatia de pão integral + 1/2 abacate", "Vitamina de whey com água + 1 colher de aveia", "Iogurte natural + chia + morangos"],
+        almoco: ["Almoço: 150g frango grelhado + salada verde + 2 colheres de arroz integral", "Peixe assado + legumes no vapor + quinoa", "Omelete de legumes + salada"],
+        jantar: ["Jantar: Sopa de legumes + 100g de tofu grelhado", "Salada de atum com folhas verdes", "Omelete de claras + espinafre"],
+        lanche: ["Lanche: 1 maçã + 10 castanhas", "Whey protein com água", "Palmito + pepino"]
+      },
+      manter: {
+        cafe: ["Café da manhã: Pão integral + queijo branco + café", "Granola com iogurte + frutas vermelhas", "Vitamina de banana + aveia"],
+        almoco: ["Almoço: Arroz integral + feijão + 120g de carne + salada", "Massa integral + molho de tomate + frango", "Salmão + purê de batata doce + brócolis"],
+        jantar: ["Jantar: Wrap de frango com legumes", "Sopa de legumes + ovo cozido", "Tapioca com ricota + rúcula"],
+        lanche: ["Lanche: 1 banana + pasta de amendoim", "Barra de cereal integral", "Frutas da estação"]
+      },
+      ganhar: {
+        cafe: ["Café da manhã: 4 ovos + 2 fatias de pão integral + 1 banana", "Vitamina hipercalórica: whey + aveia + pasta de amendoim + banana", "Cuscuz com frango desfiado"],
+        almoco: ["Almoço: 200g frango + 300g batata doce + brócolis", "Maminha + arroz + feijão + farofa", "Strogonoff de frango + batata palha"],
+        jantar: ["Jantar: Salmão + purê de batata + legumes", "Frango com macarrão integral", "Omelete de 4 ovos + queijo + presunto"],
+        lanche: ["Lanche: 3 ovos cozidos + 1 banana", "Shake de whey + leite + aveia", "Sanduíche de pasta de amendoim"]
+      }
+    };
+    
+    const plan = [];
+    for (let day = 0; day < 7; day++) {
+      const dayPlan = {
+        day: weekDays[day],
+        meals: {
+          cafe: mealOptions[goal].cafe[day % mealOptions[goal].cafe.length],
+          almoco: mealOptions[goal].almoco[day % mealOptions[goal].almoco.length],
+          jantar: mealOptions[goal].jantar[day % mealOptions[goal].jantar.length],
+          lanche: mealOptions[goal].lanche[day % mealOptions[goal].lanche.length]
+        }
+      };
+      plan.push(dayPlan);
+    }
+    
+    // Adicionar receitas e substituições baseadas na dieta
+    const recipes = {
+      emagrecer: ["• Receita: Salada de grão-de-bico com limão e hortelã", "• Receita: Sopa detox de abóbora com gengibre"],
+      manter: ["• Receita: Frango ao curry com arroz integral", "• Receita: Bowl de quinoa com legumes grelhados"],
+      ganhar: ["• Receita: Panqueca de banana com aveia e whey", "• Receita: Batata doce recheada com frango"]
+    };
+    
+    let substitutions = "";
+    if (dietPref === "vegetariano") {
+      substitutions = "🥬 Substitua carnes por: tofu, grão-de-bico, lentilha, seitan ou ovos. Para proteína, aumente leguminosas.";
+    } else if (dietPref === "vegano") {
+      substitutions = "🌱 Versão vegana: substitua leite por vegetais (amêndoas, soja), ovos por tofu ou farinha de linhaça, queijos por levedura nutricional.";
+    } else if (dietPref === "lowcarb") {
+      substitutions = "🥑 Versão low carb: troque arroz e pão por vegetais verdes, couve-flor, abobrinha. Aumente gorduras boas.";
+    } else if (dietPref === "sem gluten") {
+      substitutions = "🚫 Sem glúten: use pão sem glúten, arroz, quinoa, tapioca. Evite trigo, cevada, centeio.";
+    } else {
+      substitutions = "🍽️ Substituições inteligentes: troque carboidratos refinados por integrais, aumente vegetais, varie as fontes de proteína.";
+    }
+    
+    if (restrictions) {
+      substitutions += `\n\n⚠️ Restrições informadas: ${restrictions}. Adapte as receitas conforme necessário.`;
+    }
+    
+    const totalCalories = goal === "emagrecer" ? "~1600-1900 kcal/dia" : (goal === "ganhar" ? "~2500-3000 kcal/dia" : "~2000-2300 kcal/dia");
+    
+    return { plan, recipes: recipes[goal], substitutions, totalCalories, goal };
+  }
+
+  // Renderizar o plano
+  function renderPlan(planData) {
+    currentPlan = planData;
+    
+    // Resumo
+    const summaryHtml = `
+      <div class="summary-item"><div class="summary-value">${planData.totalCalories}</div><div class="summary-label">Meta calórica diária</div></div>
+      <div class="summary-item"><div class="summary-value">${planData.goal === "emagrecer" ? "🔥 Perda de peso" : (planData.goal === "ganhar" ? "💪 Ganho muscular" : "⚖️ Manutenção")}</div><div class="summary-label">Objetivo</div></div>
+      <div class="summary-item"><div class="summary-value">7 dias</div><div class="summary-label">Plano completo</div></div>
+    `;
+    document.getElementById('planSummary').innerHTML = summaryHtml;
+    
+    // Abas dos dias
+    const tabsHtml = planData.plan.map((day, idx) => `
+      <div class="day-tab ${idx === currentDay ? 'active' : ''}" data-day="${idx}">${day.day}</div>
+    `).join('');
+    document.getElementById('weekTabs').innerHTML = tabsHtml;
+    
+    // Adicionar eventos das abas
+    document.querySelectorAll('.day-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        currentDay = parseInt(tab.dataset.day);
+        renderCurrentDay(planData);
+        document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+      });
+    });
+    
+    // Substituições
+    document.getElementById('substitutionsText').innerHTML = planData.substitutions.replace(/\n/g, '<br>');
+    
+    renderCurrentDay(planData);
+  }
+  
+  function renderCurrentDay(planData) {
+    const dayData = planData.plan[currentDay];
+    const mealsHtml = `
+      <div class="meal-card">
+        <div class="meal-header"><i class="fas fa-sun"></i><h3>Café da manhã</h3></div>
+        <div class="meal-content">
+          <div class="meal-food">${dayData.meals.cafe}</div>
+          <div class="meal-nutrition"><span><strong>~350-450 kcal</strong> · 20g prot · 40g carb · 15g gord</span></div>
+          <div class="recipe-link" onclick="showRecipe('cafe')"><i class="fas fa-book-open"></i> Ver receita completa</div>
+        </div>
+      </div>
+      <div class="meal-card">
+        <div class="meal-header"><i class="fas fa-utensils"></i><h3>Almoço</h3></div>
+        <div class="meal-content">
+          <div class="meal-food">${dayData.meals.almoco}</div>
+          <div class="meal-nutrition"><span><strong>~550-650 kcal</strong> · 35g prot · 55g carb · 20g gord</span></div>
+          <div class="recipe-link" onclick="showRecipe('almoco')"><i class="fas fa-book-open"></i> Ver receita completa</div>
+        </div>
+      </div>
+      <div class="meal-card">
+        <div class="meal-header"><i class="fas fa-apple-alt"></i><h3>Lanche da tarde</h3></div>
+        <div class="meal-content">
+          <div class="meal-food">${dayData.meals.lanche}</div>
+          <div class="meal-nutrition"><span><strong>~150-200 kcal</strong> · 10g prot · 20g carb · 5g gord</span></div>
+        </div>
+      </div>
+      <div class="meal-card">
+        <div class="meal-header"><i class="fas fa-moon"></i><h3>Jantar</h3></div>
+        <div class="meal-content">
+          <div class="meal-food">${dayData.meals.jantar}</div>
+          <div class="meal-nutrition"><span><strong>~450-550 kcal</strong> · 30g prot · 45g carb · 15g gord</span></div>
+          <div class="recipe-link" onclick="showRecipe('jantar')"><i class="fas fa-book-open"></i> Ver receita completa</div>
+        </div>
+      </div>
+    `;
+    document.getElementById('mealsContainer').innerHTML = mealsHtml;
+  }
+  
+  // Receitas detalhadas
+  window.showRecipe = function(mealType) {
+    const recipesDetail = {
+      cafe: "🧑‍🍳 **Modo de preparo:** Bata os ingredientes ou prepare conforme sua preferência. Para opções mais elaboradas: adicione canela, mel ou frutas picadas.",
+      almoco: "🧑‍🍳 **Modo de preparo:** Tempere a proteína com ervas e alho. Cozinhe os acompanhamentos no vapor ou grelhados. Finalize com azeite e limão.",
+      jantar: "🧑‍🍳 **Modo de preparo:** Refogue legumes, adicione a proteína, cozinhe até dourar. Sirva com salada fresca."
+    };
+    showToast(`📖 ${recipesDetail[mealType] || "Confira os ingredientes e prepare uma refeição deliciosa!"}`);
+  };
+  
+  // Gerar plano
+
+  async function generatePlan() {
+    const name = document.getElementById('userName').value.trim() || "Usuário";
+    let goal = "";
+    for (const radio of document.querySelectorAll('input[name="goal"]')) {
+      if (radio.checked) goal = radio.value;
+    }
+    const dietPref = document.getElementById('dietPref').value;
+    const restrictions = document.getElementById('restrictions').value;
+
+    document.getElementById('loadingOverlay').style.display = 'block';
+    document.getElementById('planResult').style.display = 'none';
+    document.getElementById('generatePlanBtn').disabled = true;
+
+    const token = localStorage.getItem('token');
+
+    // Se tiver token, tenta gerar via IA real
+if (token) {
+      try {
+        const goalLabel = goal === 'emagrecer' ? 'emagrecimento' : goal === 'ganhar' ? 'ganho de massa muscular' : 'manutenção do peso';
+        const prompt = `Crie um plano alimentar semanal completo (7 dias) para ${name}.
+Objetivo: ${goalLabel}.
+Preferência alimentar: ${dietPref || 'onívoro'}.
+Restrições: ${restrictions || 'nenhuma'}.
+Formato: organize por dia (Segunda a Domingo) com café da manhã, almoço, jantar e lanche.
+Inclua estimativa calórica diária e dica nutricional ao final.`;
+
+        const res = await fetch(`${API_BASE}/chat/mensagem`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ mensagem: prompt })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('loadingOverlay').style.display = 'none';
+          document.getElementById('planResult').style.display = 'block';
+          document.getElementById('generatePlanBtn').disabled = false;
+          // Renderizar a resposta da IA no container de resultado
+          const container = document.getElementById('planResult');
+          container.innerHTML = `
+            <div style="padding:24px">
+              <h3 style="margin-bottom:16px;font-size:18px">✨ Plano personalizado para ${name}</h3>
+              <div style="white-space:pre-wrap;line-height:1.7;font-size:14px">${data.resposta.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')}</div>
+              <button onclick="salvarPlano('${goalLabel}', ${JSON.stringify(data.resposta)})" style="margin-top:20px;padding:10px 20px;background:#22C76E;border:none;border-radius:8px;color:#0D0F0E;font-weight:600;cursor:pointer">💾 Salvar no histórico</button>
+            </div>`;
+          showToast(`✨ Plano gerado com IA para ${name}!`);
+          return;
+        }
+      } catch(e) {
+        console.warn('Erro na IA, usando gerador local:', e);
+      }
+    }
+
+    // Fallback: gerador local (sem login ou se IA falhar)
+    setTimeout(() => {
+      const userData = { name, goal, dietPref, restrictions };
+      const planData = generateMealPlan(userData);
+      document.getElementById('loadingOverlay').style.display = 'none';
+      document.getElementById('planResult').style.display = 'block';
+      document.getElementById('generatePlanBtn').disabled = false;
+      renderPlan(planData);
+      showToast(`✨ Plano gerado para ${name}! Faça login para usar IA personalizada.`);
+    }, 1500);
+  }
+
+  async function salvarPlano(titulo, texto) {
+    const token = localStorage.getItem('token');
+    if (!token) { showToast('Faça login para salvar!', true); return; }
+    try {
+      const res = await fetch(`${API_BASE}/historico/salvar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ titulo: `Plano - ${titulo}`, calorias: 0, dieta_gerada: texto })
+      });
+      if (res.ok) showToast('✅ Plano salvo no histórico!');
+      else showToast('❌ Erro ao salvar', true);
+    } catch(e) { showToast('❌ Erro de conexão', true); }
+  }
+  
+  // Exportar/Imprimir
+  function downloadPlan() {
+    if (!currentPlan) {
+      showToast('Gere um plano primeiro!', true);
+      return;
+    }
+    const content = document.getElementById('planResult').cloneNode(true);
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html><head><title>Plano NutriAI - ${document.getElementById('userName').value}</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 2rem; background: white; color: black; }
+        .meal-card { border: 1px solid #ddd; margin-bottom: 1rem; padding: 1rem; border-radius: 12px; }
+        .meal-header { background: #f0f0f0; padding: 0.5rem; }
+        .plan-summary { display: flex; gap: 2rem; margin-bottom: 2rem; }
+      </style>
+      </head><body>${content.innerHTML}</body></html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+    showToast('🖨️ Enviando para impressão...');
+  }
+  
+  function showToast(msg, isError = false) {
+    const existing = document.querySelector('.toast-msg');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast-msg';
+    toast.textContent = msg;
+    if (isError) toast.style.background = '#C73B2B';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+  
+  // Event listeners
+  document.getElementById('generatePlanBtn').addEventListener('click', generatePlan);
+  document.getElementById('downloadPlanBtn').addEventListener('click', downloadPlan);
+  document.getElementById('printPlanBtn').addEventListener('click', downloadPlan);
+  
+  // Inicializar com um plano exemplo
+  setTimeout(() => {
+    generatePlan();
+  }, 300);
+</script>
+</body>
+</html>

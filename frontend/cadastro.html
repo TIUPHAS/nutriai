@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>NutriAI · Criar Conta | Comece sua jornada</title>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --black-pearl: #0D0F0E;
+      --black-deep: #111413;
+      --black-mid: #181C1A;
+      --black-surface: #1F2421;
+      --black-border: #2A302C;
+      
+      --green-100: #C8F5D8;
+      --green-200: #8EEAB0;
+      --green-400: #3DD68C;
+      --green-500: #22C76E;
+      --green-600: #16A35A;
+      --green-800: #0D6B3D;
+      
+      --white: #F4F7F5;
+      --white-dim: #B8C4BC;
+      --white-muted: #7A8B80;
+      
+      --font-head: 'Space Grotesk', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      
+      --shadow-glow: 0 8px 30px rgba(34, 199, 110, 0.08);
+      --shadow-glow-strong: 0 0 20px rgba(34, 199, 110, 0.15);
+      --transition-smooth: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+
+    body {
+      background: var(--black-pearl);
+      color: var(--white);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow-x: hidden;
+      padding: 2rem 1rem;
+    }
+
+    /* Background decorativo */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 10% 20%, rgba(61, 214, 140, 0.04), transparent 60%),
+                  radial-gradient(circle at 90% 80%, rgba(34, 199, 110, 0.03), transparent 55%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Partículas flutuantes */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .particle {
+      position: absolute;
+      background: var(--green-400);
+      border-radius: 50%;
+      opacity: 0.08;
+      animation: floatParticle 14s infinite ease-in-out;
+    }
+    @keyframes floatParticle {
+      0%, 100% { transform: translateY(0) translateX(0); opacity: 0.04; }
+      50% { transform: translateY(-40px) translateX(25px); opacity: 0.12; }
+    }
+
+    /* Container principal */
+    .register-container {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      animation: fadeSlideUp 0.5s ease-out;
+    }
+
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Card */
+    .register-card {
+      background: var(--black-mid);
+      border: 1px solid var(--black-border);
+      border-radius: 36px;
+      padding: 2.2rem 2rem;
+      backdrop-filter: blur(2px);
+      box-shadow: var(--shadow-glow);
+      transition: var(--transition-smooth);
+    }
+    .register-card:hover {
+      box-shadow: var(--shadow-glow-strong);
+      border-color: rgba(61, 214, 140, 0.2);
+    }
+
+    /* Header */
+    .register-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .logo-icon {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 1rem;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+      transition: transform 0.2s;
+    }
+    .logo-icon:hover {
+      transform: scale(1.02);
+    }
+    .register-header h1 {
+      font-family: var(--font-head);
+      font-size: 1.9rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--white) 0%, var(--white-dim) 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+    .register-header h1 span {
+      background: linear-gradient(135deg, var(--green-400), var(--green-500));
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+    .register-sub {
+      font-size: 0.7rem;
+      color: var(--white-muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-top: 0.5rem;
+    }
+    .register-desc {
+      font-size: 0.8rem;
+      color: var(--white-dim);
+      margin-top: 0.6rem;
+    }
+
+    /* Formulário em duas colunas (grid) */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      margin-bottom: 0.2rem;
+    }
+    .input-group-full {
+      grid-column: span 2;
+    }
+    .input-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--white-muted);
+      font-weight: 500;
+    }
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .input-icon {
+      position: absolute;
+      left: 1rem;
+      color: var(--white-muted);
+      width: 16px;
+      height: 16px;
+      pointer-events: none;
+    }
+    .input-field {
+      width: 100%;
+      background: var(--black-surface);
+      border: 1px solid var(--black-border);
+      border-radius: 14px;
+      padding: 0.8rem 1rem 0.8rem 2.6rem;
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      color: var(--white);
+      transition: var(--transition-smooth);
+      outline: none;
+    }
+    .input-field:focus {
+      border-color: var(--green-500);
+      box-shadow: 0 0 0 3px rgba(34, 199, 110, 0.1);
+    }
+    .input-field::placeholder {
+      color: var(--white-muted);
+      font-weight: 300;
+      font-size: 0.75rem;
+    }
+
+    /* Campo de senha com força */
+    .password-strength {
+      margin-top: 0.3rem;
+      display: flex;
+      gap: 0.3rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .strength-bar {
+      flex: 1;
+      height: 3px;
+      background: var(--black-border);
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+    .strength-text {
+      font-size: 0.6rem;
+      color: var(--white-muted);
+      min-width: 70px;
+      text-align: right;
+    }
+
+    /* Termos */
+    .terms-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.7rem;
+      margin: 1rem 0 1.2rem;
+    }
+    .terms-group input {
+      accent-color: var(--green-500);
+      width: 18px;
+      height: 18px;
+      margin-top: 0.15rem;
+      cursor: pointer;
+    }
+    .terms-label {
+      font-size: 0.7rem;
+      color: var(--white-dim);
+      line-height: 1.4;
+    }
+    .terms-label a {
+      color: var(--green-400);
+      text-decoration: none;
+    }
+    .terms-label a:hover {
+      text-decoration: underline;
+    }
+
+    /* Botão principal */
+    .btn-register {
+      width: 100%;
+      background: linear-gradient(95deg, var(--green-500), var(--green-600));
+      border: none;
+      padding: 0.9rem;
+      border-radius: 16px;
+      font-family: var(--font-head);
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--black-pearl);
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+    }
+    .btn-register:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.05);
+      box-shadow: 0 8px 20px rgba(34, 199, 110, 0.3);
+    }
+
+    /* Divisor social */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      color: var(--white-muted);
+      font-size: 0.7rem;
+    }
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: var(--black-border);
+    }
+    .social-buttons {
+      display: flex;
+      gap: 1rem;
+    }
+    .social-btn {
+      flex: 1;
+      background: var(--black-surface);
+      border: 1px solid var(--black-border);
+      border-radius: 14px;
+      padding: 0.65rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      color: var(--white-dim);
+      font-size: 0.7rem;
+    }
+    .social-btn:hover {
+      border-color: var(--green-600);
+      background: rgba(34, 199, 110, 0.05);
+      transform: translateY(-2px);
+    }
+
+    /* Link login */
+    .login-prompt {
+      text-align: center;
+      margin-top: 1.8rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--black-border);
+      font-size: 0.75rem;
+      color: var(--white-muted);
+    }
+    .login-link {
+      color: var(--green-400);
+      text-decoration: none;
+      font-weight: 600;
+      margin-left: 0.3rem;
+      transition: color 0.2s;
+    }
+    .login-link:hover {
+      color: var(--green-500);
+      text-decoration: underline;
+    }
+
+    /* Toast */
+    .toast-message {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--green-600);
+      color: var(--white);
+      padding: 0.7rem 1.5rem;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      animation: toastFade 0.3s ease;
+    }
+    @keyframes toastFade {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    .loader {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--black-pearl);
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 520px) {
+      .register-card { padding: 1.5rem; }
+      .form-grid { gap: 0.8rem; }
+      .social-btn span { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<div class="register-container">
+  <div class="register-card">
+    <div class="register-header">
+      <svg class="logo-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="80" height="80" rx="20" fill="#1A2420"/>
+        <path d="M18 58V22" stroke="#F4F7F5" stroke-width="6" stroke-linecap="round"/>
+        <path d="M62 58V22" stroke="#F4F7F5" stroke-width="6" stroke-linecap="round"/>
+        <path d="M18 22L40 44" stroke="#F4F7F5" stroke-width="6" stroke-linecap="round"/>
+        <ellipse cx="50" cy="33" rx="13" ry="7" transform="rotate(-38 50 33)" fill="#22C76E" opacity="0.95"/>
+        <path d="M40 44L62 22" stroke="#0D6B3D" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+        <circle cx="62" cy="22" r="5" fill="#3DD68C"/>
+        <circle cx="62" cy="22" r="2.5" fill="#0D0F0E"/>
+      </svg>
+      <h1>Criar <span>conta</span></h1>
+      <div class="register-sub">NutriAI · Inteligência que nutre</div>
+      <div class="register-desc">Comece sua jornada personalizada em segundos</div>
+    </div>
+
+    <form id="registerForm">
+      <div class="form-grid">
+        <!-- Nome completo -->
+        <div class="input-group input-group-full">
+          <label class="input-label">Nome completo</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <input type="text" id="fullName" class="input-field" placeholder="Ana Clara Santos" autocomplete="name">
+          </div>
+        </div>
+        
+        <!-- E-mail -->
+        <div class="input-group input-group-full">
+          <label class="input-label">E-mail</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            <input type="email" id="email" class="input-field" placeholder="ola@nutriai.com" autocomplete="email">
+          </div>
+        </div>
+
+        <!-- Telefone (opcional) -->
+        <div class="input-group">
+          <label class="input-label">Telefone</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+            <input type="tel" id="phone" class="input-field" placeholder="(11) 99999-9999">
+          </div>
+        </div>
+
+        <!-- Data de nascimento -->
+        <div class="input-group">
+          <label class="input-label">Data de nasc.</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <input type="date" id="birthdate" class="input-field" placeholder="dd/mm/aaaa">
+          </div>
+        </div>
+
+        <!-- Senha -->
+        <div class="input-group">
+          <label class="input-label">Senha</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <input type="password" id="password" class="input-field" placeholder="Crie uma senha segura">
+          </div>
+          <div class="password-strength" id="strengthContainer">
+            <div class="strength-bar" id="bar1"></div>
+            <div class="strength-bar" id="bar2"></div>
+            <div class="strength-bar" id="bar3"></div>
+            <div class="strength-text" id="strengthText">Fraca</div>
+          </div>
+        </div>
+
+        <!-- Confirmar senha -->
+        <div class="input-group">
+          <label class="input-label">Confirmar senha</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              <line x1="12" y1="15" x2="12" y2="17"/>
+            </svg>
+            <input type="password" id="confirmPassword" class="input-field" placeholder="Digite novamente">
+          </div>
+        </div>
+      </div>
+
+      <!-- Termos -->
+      <div class="terms-group">
+        <input type="checkbox" id="termsCheck">
+        <label class="terms-label" for="termsCheck">
+          Eu concordo com os <a href="#" id="termsLink">Termos de Uso</a> e <a href="#" id="privacyLink">Política de Privacidade</a> do NutriAI.
+        </label>
+      </div>
+
+      <button type="submit" class="btn-register" id="registerBtn">
+        <span>Criar minha conta</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </button>
+    </form>
+
+    <div class="divider">
+      <div class="divider-line"></div>
+      <span>ou cadastre-se com</span>
+      <div class="divider-line"></div>
+    </div>
+
+    <div class="social-buttons">
+      <button class="social-btn" id="googleRegisterBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        <span>Google</span>
+      </button>
+      <button class="social-btn" id="appleRegisterBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C5.29 17.95 4.5 13.5 6.85 9.6c1.1-1.87 2.8-2.78 4.44-2.78 1.66 0 2.7.85 3.64.85.88 0 2.22-1 3.82-.85.62.03 2.38.25 3.51 1.92-.1.06-2.08 1.25-2.06 3.68.03 2.98 2.61 3.97 2.64 3.98-.02.07-.41 1.41-1.35 2.8-.77 1.14-1.56 2.28-2.84 2.3-.94.01-1.24-.57-2.4-.57-1.15 0-1.5.57-2.45.57zM16.14 3.2c.74-.9 1.23-2.14 1.09-3.4-.92.05-2.04.62-2.7 1.4-.6.72-1.12 1.85-.98 2.95.97.08 1.99-.5 2.59-1.05z"/>
+        </svg>
+        <span>Apple</span>
+      </button>
+    </div>
+
+    <div class="login-prompt">
+      Já possui uma conta?
+      <a href="login.html" class="login-link" id="loginLink">Fazer login</a>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+  <script>
+  // Partículas decorativas
+  function createParticles() {
+    const container = document.getElementById('particles');
+    for (let i = 0; i < 30; i++) {
+      const p = document.createElement('div');
+      p.classList.add('particle');
+      const size = Math.random() * 5 + 2;
+      p.style.width = `${size}px`;
+      p.style.height = `${size}px`;
+      p.style.left = `${Math.random() * 100}%`;
+      p.style.top = `${Math.random() * 100}%`;
+      p.style.animationDelay = `${Math.random() * 12}s`;
+      p.style.animationDuration = `${12 + Math.random() * 15}s`;
+      container.appendChild(p);
+    }
+  }
+  createParticles();
+
+  function showToast(msg, isError = false) {
+    const existing = document.querySelector('.toast-message');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast-message';
+    toast.textContent = msg;
+    if (isError) {
+      toast.style.background = '#C73B2B';
+    } else {
+      toast.style.background = 'var(--green-600)';
+    }
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 300);
+    }, 2800);
+  }
+
+  // Validação de força da senha
+  const passwordInput = document.getElementById('password');
+  const bar1 = document.getElementById('bar1');
+  const bar2 = document.getElementById('bar2');
+  const bar3 = document.getElementById('bar3');
+  const strengthText = document.getElementById('strengthText');
+
+  function checkPasswordStrength(pwd) {
+    let strength = 0;
+    if (pwd.length >= 6) strength++;
+    if (pwd.length >= 10) strength++;
+    if (/[A-Z]/.test(pwd) && /[0-9]/.test(pwd) && /[^A-Za-z0-9]/.test(pwd)) strength++;
+    else if (/[A-Z]/.test(pwd) || /[0-9]/.test(pwd)) strength = Math.min(strength, 2);
+    
+    const colors = ['#2A302C', '#C73B2B', '#E6A017', '#22C76E'];
+    const texts = ['Muito fraca', 'Fraca', 'Média', 'Forte'];
+    const val = Math.min(strength, 3);
+    [bar1, bar2, bar3].forEach((bar, idx) => {
+      bar.style.background = idx <= val ? colors[val] : '#2A302C';
+    });
+    strengthText.textContent = texts[val];
+    return val;
+  }
+
+  passwordInput.addEventListener('input', (e) => {
+    checkPasswordStrength(e.target.value);
+  });
+
+  // Loading state
+  function setButtonLoading(btn, isLoading) {
+    if (isLoading) {
+      btn.disabled = true;
+      btn.style.opacity = '0.7';
+      const original = btn.innerHTML;
+      btn.dataset.original = original;
+      btn.innerHTML = `<span class="loader"></span> Criando conta...`;
+    } else {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      if (btn.dataset.original) btn.innerHTML = btn.dataset.original;
+    }
+  }
+
+  // Pegar referências dos elementos
+  const form = document.getElementById('registerForm');
+  const registerBtn = document.getElementById('registerBtn');
+
+  // Submit handler REAL (sem duplicação)
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const fullName = document.getElementById('fullName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const confirmPwd = document.getElementById('confirmPassword').value;
+    const termsAccepted = document.getElementById('termsCheck').checked;
+
+    // Validações
+    if (!fullName || fullName.length < 3) {
+      showToast('Por favor, insira seu nome completo.', true);
+      return;
+    }
+    if (!email || !email.includes('@') || email.length < 5) {
+      showToast('Insira um e-mail válido.', true);
+      return;
+    }
+    if (password.length < 6) {
+      showToast('A senha deve ter pelo menos 6 caracteres.', true);
+      return;
+    }
+    if (password !== confirmPwd) {
+      showToast('As senhas não coincidem.', true);
+      return;
+    }
+    if (!termsAccepted) {
+      showToast('Você precisa aceitar os Termos de Uso.', true);
+      return;
+    }
+    
+    const strength = checkPasswordStrength(password);
+    if (strength < 1) {
+      showToast('Crie uma senha mais segura (mínimo 6 caracteres).', true);
+      return;
+    }
+
+    setButtonLoading(registerBtn, true);
+
+    try {
+      const response = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nome: fullName,
+          email: email,
+          senha: password
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        showToast('🎉 Conta criada com sucesso! Redirecionando para login...');
+        
+        // Limpar formulário
+        form.reset();
+        document.getElementById('termsCheck').checked = false;
+        
+        // Redirecionar para login após 2 segundos
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 2000);
+      } else {
+        showToast(data.detail || '❌ Erro ao criar conta. Tente outro e-mail.', true);
+      }
+    } catch (error) {
+      console.error('Erro:', error);
+      showToast('❌ Erro de conexão. Verifique se o backend está rodando.', true);
+    } finally {
+      setButtonLoading(registerBtn, false);
+    }
+  });
+
+  // Eventos de navegação
+  document.getElementById('termsLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    showToast('📜 Termos de Uso: Transparência, segurança e compromisso com sua saúde.');
+  });
+  document.getElementById('privacyLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    showToast('🔒 Seus dados são protegidos. Política de privacidade NutriAI.');
+  });
+  document.getElementById('googleRegisterBtn').addEventListener('click', () => {
+    showToast('🔐 Cadastro com Google em breve. Use o formulário!');
+  });
+  document.getElementById('appleRegisterBtn').addEventListener('click', () => {
+    showToast('🍏 Cadastro com Apple em desenvolvimento.');
+  });
+</script>
+</body>
+</html>

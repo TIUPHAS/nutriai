@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>NutriAI · Dashboard | Sua jornada nutricional</title>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js para gráficos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+ 
+    :root {
+      --black-pearl: #0D0F0E;
+      --black-deep: #111413;
+      --black-mid: #181C1A;
+      --black-surface: #1F2421;
+      --black-border: #2A302C;
+      
+      --green-100: #C8F5D8;
+      --green-200: #8EEAB0;
+      --green-400: #3DD68C;
+      --green-500: #22C76E;
+      --green-600: #16A35A;
+      --green-800: #0D6B3D;
+      
+      --white: #F4F7F5;
+      --white-dim: #B8C4BC;
+      --white-muted: #7A8B80;
+      
+      --font-head: 'Space Grotesk', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      
+      --shadow-glow: 0 8px 30px rgba(34, 199, 110, 0.08);
+      --shadow-glow-strong: 0 0 20px rgba(34, 199, 110, 0.15);
+      --transition-smooth: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+ 
+    body {
+      background: var(--black-pearl);
+      color: var(--white);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+ 
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 10% 20%, rgba(61, 214, 140, 0.03), transparent 60%),
+                  radial-gradient(circle at 90% 80%, rgba(34, 199, 110, 0.02), transparent 55%);
+      pointer-events: none;
+      z-index: 0;
+    }
+ 
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .particle {
+      position: absolute;
+      background: var(--green-400);
+      border-radius: 50%;
+      opacity: 0.06;
+      animation: floatParticle 14s infinite ease-in-out;
+    }
+    @keyframes floatParticle {
+      0%, 100% { transform: translateY(0) translateX(0); opacity: 0.04; }
+      50% { transform: translateY(-40px) translateX(25px); opacity: 0.1; }
+    }
+ 
+    .dashboard-container {
+      position: relative;
+      z-index: 2;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+ 
+    .navbar {
+      background: rgba(24, 28, 26, 0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--black-border);
+      border-radius: 24px;
+      padding: 0.8rem 2rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      box-shadow: var(--shadow-glow);
+    }
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+    }
+    .logo-text {
+      font-family: var(--font-head);
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--white), var(--white-dim));
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+    .logo-text span {
+      background: linear-gradient(135deg, var(--green-400), var(--green-500));
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+    .nav-links {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .nav-btn {
+      background: transparent;
+      border: 1px solid var(--black-border);
+      color: var(--white-dim);
+      padding: 0.5rem 1.2rem;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .nav-btn:hover {
+      border-color: var(--green-500);
+      color: var(--green-400);
+      transform: translateY(-2px);
+    }
+    .logout-btn {
+      background: rgba(199, 59, 43, 0.1);
+      border-color: #C73B2B;
+      color: #C73B2B;
+    }
+    .logout-btn:hover {
+      background: rgba(199, 59, 43, 0.2);
+      color: #ff6b5a;
+    }
+ 
+    .welcome-card {
+      background: linear-gradient(135deg, var(--black-mid), var(--black-surface));
+      border: 1px solid var(--black-border);
+      border-radius: 28px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-glow);
+    }
+    .welcome-badge {
+      display: inline-block;
+      background: rgba(61, 214, 140, 0.1);
+      color: var(--green-400);
+      padding: 0.3rem 1rem;
+      border-radius: 40px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+    }
+    .welcome-card h1 {
+      font-family: var(--font-head);
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    .welcome-card h1 span {
+      color: var(--green-400);
+    }
+    .welcome-date {
+      color: var(--white-muted);
+      font-size: 0.85rem;
+    }
+ 
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--black-mid);
+      border: 1px solid var(--black-border);
+      border-radius: 20px;
+      padding: 1.5rem;
+      transition: var(--transition-smooth);
+    }
+    .stat-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--green-600);
+      box-shadow: var(--shadow-glow-strong);
+    }
+    .stat-icon {
+      font-size: 2rem;
+      margin-bottom: 0.8rem;
+    }
+    .stat-value {
+      font-family: var(--font-head);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--green-400);
+    }
+    .stat-label {
+      color: var(--white-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 0.3rem;
+    }
+ 
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .content-card {
+      background: var(--black-mid);
+      border: 1px solid var(--black-border);
+      border-radius: 24px;
+      padding: 1.5rem;
+      transition: var(--transition-smooth);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.2rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 1px solid var(--black-border);
+    }
+    .card-header h3 {
+      font-family: var(--font-head);
+      font-size: 1.2rem;
+    }
+    .card-header a {
+      color: var(--green-400);
+      text-decoration: none;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .quick-action {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: var(--black-surface);
+      border-radius: 16px;
+      margin-bottom: 1rem;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+    .quick-action:hover {
+      background: rgba(61, 214, 140, 0.05);
+      transform: translateX(5px);
+    }
+    .quick-icon {
+      font-size: 1.8rem;
+    }
+    .quick-info h4 {
+      font-size: 1rem;
+      margin-bottom: 0.2rem;
+    }
+    .quick-info p {
+      font-size: 0.75rem;
+      color: var(--white-muted);
+    }
+ 
+    .history-list {
+      max-height: 350px;
+      overflow-y: auto;
+    }
+    .history-item {
+      padding: 0.8rem;
+      border-bottom: 1px solid var(--black-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .history-date {
+      font-size: 0.75rem;
+      color: var(--white-muted);
+    }
+    .history-calories {
+      font-weight: 600;
+      color: var(--green-400);
+    }
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: var(--white-muted);
+    }
+ 
+    .chart-container {
+      position: relative;
+      height: 250px;
+    }
+    canvas {
+      max-height: 250px;
+    }
+ 
+    .goal-progress {
+      margin-top: 1rem;
+    }
+    .progress-bar {
+      background: var(--black-surface);
+      border-radius: 12px;
+      height: 10px;
+      overflow: hidden;
+      margin: 0.8rem 0;
+    }
+    .progress-fill {
+      background: linear-gradient(90deg, var(--green-500), var(--green-400));
+      height: 100%;
+      border-radius: 12px;
+      transition: width 0.5s ease;
+    }
+ 
+    @media (max-width: 768px) {
+      .dashboard-container {
+        padding: 1rem;
+      }
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+      .navbar {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+ 
+    /* ── Seletor de perfil ── */
+    .profile-switcher-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--black-mid);
+      border: 1px solid var(--black-border);
+      border-radius: 16px;
+      padding: 0.7rem 1.2rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+    .profile-switcher-bar .ps-label {
+      font-size: 0.75rem;
+      color: var(--white-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .profile-switcher-bar .ps-active {
+      font-size: 0.82rem;
+      color: var(--white-dim);
+      font-weight: 500;
+    }
+    .ps-active span { color: var(--green-400); }
+    .switch-profile-btn {
+      background: rgba(61,214,140,0.1);
+      border: 1px solid rgba(61,214,140,0.25);
+      color: var(--green-400);
+      border-radius: 10px;
+      padding: 0.4rem 1rem;
+      font-size: 0.78rem;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .switch-profile-btn:hover { background: rgba(61,214,140,0.18); }
+ 
+    /* Modal */
+    .ps-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.82);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .ps-overlay.open { display: flex; }
+    .ps-modal {
+      background: var(--black-mid);
+      border: 1px solid var(--black-border);
+      border-radius: 28px;
+      width: 100%;
+      max-width: 640px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    }
+    .ps-modal-header {
+      padding: 1.4rem 1.6rem;
+      border-bottom: 1px solid var(--black-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--black-surface);
+    }
+    .ps-modal-header h3 {
+      font-family: var(--font-head);
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    .ps-modal-close {
+      background: none;
+      border: none;
+      color: var(--white-muted);
+      font-size: 1.3rem;
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+    .ps-modal-close:hover { color: var(--white); }
+    .ps-modal-body {
+      padding: 1.2rem 1.4rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .ps-modal-body::-webkit-scrollbar { width: 4px; }
+    .ps-modal-body::-webkit-scrollbar-thumb { background: var(--black-border); border-radius: 4px; }
+    .ps-empty {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      color: var(--white-muted);
+      font-size: 0.85rem;
+    }
+    .ps-item {
+      background: var(--black-surface);
+      border: 1px solid var(--black-border);
+      border-radius: 16px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 0.8rem;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .ps-item:hover { border-color: rgba(61,214,140,0.4); background: rgba(61,214,140,0.04); }
+    .ps-item.active { border-color: var(--green-500); background: rgba(61,214,140,0.06); }
+    .ps-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.6rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .ps-item-date { font-size: 0.7rem; color: var(--white-muted); }
+    .ps-item-badge {
+      font-size: 0.65rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      background: rgba(61,214,140,0.1);
+      color: var(--green-400);
+      border: 1px solid rgba(61,214,140,0.2);
+    }
+    .ps-item-values {
+      display: flex;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+    }
+    .ps-val { text-align: center; }
+    .ps-val span {
+      display: block;
+      font-family: var(--font-head);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--green-400);
+    }
+    .ps-val small {
+      font-size: 0.62rem;
+      color: var(--white-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .ps-item-params {
+      margin-top: 0.5rem;
+      font-size: 0.68rem;
+      color: var(--white-muted);
+    }
+    .ps-item-params b { color: var(--white-dim); }
+    .ps-loading {
+      text-align: center;
+      padding: 1.5rem;
+      color: var(--white-muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+ 
+<div class="particles" id="particles"></div>
+ 
+<div class="dashboard-container">
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo-area">
+      <svg class="logo-icon" viewBox="0 0 80 80" fill="none">
+        <rect width="80" height="80" rx="20" fill="#1A2420"/>
+        <path d="M18 58V22" stroke="#F4F7F5" stroke-width="6" stroke-linecap="round"/>
+        <path d="M62 58V22" stroke="#F4F7F5" stroke-width="6" stroke-linecap="round"/>
+        <path d="M18 22L40 44" stroke="#F4F7F5" stroke-width="6" stroke-linecap="round"/>
+        <ellipse cx="50" cy="33" rx="13" ry="7" transform="rotate(-38 50 33)" fill="#22C76E" opacity="0.95"/>
+        <circle cx="62" cy="22" r="5" fill="#3DD68C"/>
+        <circle cx="62" cy="22" r="2.5" fill="#0D0F0E"/>
+      </svg>
+      <span class="logo-text">Nutri<span>AI</span></span>
+    </div>
+    <div class="nav-links">
+      <a href="calculadora.html" class="nav-btn">📊 Calculadora</a>
+      <a href="chat.html" class="nav-btn">🤖 Chat Nutricional</a>
+      <a href="diario.html" class="nav-btn">📝 Diário Alimentar</a>
+      <button class="nav-btn logout-btn" onclick="logout()">🚪 Sair</button>
+    </div>
+  </nav>
+ 
+  <!-- Welcome Card -->
+  <div class="welcome-card">
+    <div class="welcome-badge">✨ BEM-VINDO DE VOLTA</div>
+    <h1>Olá, <span id="userName">Usuário</span>!</h1>
+    <p class="welcome-date" id="currentDate"></p>
+    <p style="margin-top: 1rem; color: var(--white-dim);">Sua jornada para uma vida mais saudável continua aqui. Que tal calcular sua dieta hoje? 🍎</p>
+  </div>
+ 
+  <!-- Modal seletor de perfil -->
+  <div class="ps-overlay" id="psOverlay">
+    <div class="ps-modal">
+      <div class="ps-modal-header">
+        <h3>🔄 Trocar perfil ativo</h3>
+        <button class="ps-modal-close" id="psClose">✕</button>
+      </div>
+      <div class="ps-modal-body" id="psModalBody">
+        <div class="ps-loading">Carregando histórico...</div>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- Barra de perfil ativo -->
+  <div class="profile-switcher-bar" id="profileSwitcherBar" style="display:none;">
+    <div>
+      <div class="ps-label">📋 Perfil ativo</div>
+      <div class="ps-active" id="psActiveLabel">—</div>
+    </div>
+    <button class="switch-profile-btn" id="switchProfileBtn">🔄 Trocar perfil</button>
+  </div>
+ 
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">⚡</div>
+      <div class="stat-value" id="statTMB">--</div>
+      <div class="stat-label">Taxa Metabólica Basal</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🔥</div>
+      <div class="stat-value" id="statGET">--</div>
+      <div class="stat-label">Gasto Energético Total</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🎯</div>
+      <div class="stat-value" id="statMeta">--</div>
+      <div class="stat-label">Meta Diária</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📅</div>
+      <div class="stat-value" id="statDias">--</div>
+      <div class="stat-label">Dias de Jornada</div>
+    </div>
+  </div>
+ 
+  <!-- Main Content Grid -->
+  <div class="content-grid">
+    <!-- Ações Rápidas -->
+    <div class="content-card">
+      <div class="card-header">
+        <h3>⚡ Ações Rápidas</h3>
+        <a href="calculadora.html">Ver todas →</a>
+      </div>
+      <div class="quick-action" onclick="window.location.href='calculadora.html'">
+        <div class="quick-icon">📊</div>
+        <div class="quick-info">
+          <h4>Calcular Minhas Metas</h4>
+          <p>Atualize seu TMB e GET para recomendações precisas</p>
+        </div>
+      </div>
+      <div class="quick-action" onclick="window.location.href='chat.html'">
+        <div class="quick-icon">🤖</div>
+        <div class="quick-info">
+          <h4>Conversar com NutriAI</h4>
+          <p>Monte uma dieta personalizada com nosso assistente</p>
+        </div>
+      </div>
+      <div class="quick-action" onclick="window.location.href='diario.html'">
+        <div class="quick-icon">📝</div>
+        <div class="quick-info">
+          <h4>Registrar Refeições</h4>
+          <p>Anote o que comeu hoje e acompanhe seu progresso</p>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- Gráfico de Progresso -->
+    <div class="content-card">
+      <div class="card-header">
+        <h3>📈 Progresso Semanal</h3>
+        <a href="#" onclick="alert('Em breve: relatórios detalhados!')">Detalhes →</a>
+      </div>
+      <div class="chart-container">
+        <canvas id="progressChart"></canvas>
+      </div>
+    </div>
+ 
+    <!-- Metas e Objetivos -->
+    <div class="content-card">
+      <div class="card-header">
+        <h3>🎯 Minhas Metas</h3>
+        <a href="#" onclick="definirMeta()">Definir nova →</a>
+      </div>
+      <div id="goalContainer">
+        <div class="goal-progress">
+          <div style="display: flex; justify-content: space-between;">
+            <span>Meta calórica diária</span>
+            <span><span id="caloriasAtuais">0</span> / <span id="caloriasMeta">2000</span> kcal</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="calorieProgress" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="goal-progress" style="margin-top: 1rem;">
+          <div style="display: flex; justify-content: space-between;">
+            <span>Progresso da semana</span>
+            <span id="weekProgress">0%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="weekProgressBar" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+      <div id="metaMessage" style="margin-top: 1rem; font-size: 0.8rem; color: var(--white-muted); text-align: center;">
+        💡 Defina sua meta para acompanhar seu progresso
+      </div>
+    </div>
+ 
+    <!-- Histórico de Dietas -->
+    <div class="content-card">
+      <div class="card-header">
+        <h3>📋 Últimas Dietas</h3>
+        <a href="#" onclick="verHistoricoCompleto()">Ver todas →</a>
+      </div>
+      <div id="historyList" class="history-list">
+        <div class="empty-state">
+          🍽️ Nenhuma dieta registrada ainda.<br>
+          Vá ao chat e peça uma dieta personalizada!
+        </div>
+      </div>
+      <div style="margin-top: 1rem; text-align: center;">
+        <button onclick="verHistoricoCompleto()" style="background: transparent; border: 1px solid #2A302C; color: #B8C4BC; padding: 0.5rem 1rem; border-radius: 12px; cursor: pointer; width: 100%;">
+          📚 Ver histórico completo
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<script src="config.js"></script>
+  <script>
+  // Partículas
+  function createParticles() {
+    const container = document.getElementById('particles');
+    for (let i = 0; i < 40; i++) {
+      const p = document.createElement('div');
+      p.classList.add('particle');
+      const size = Math.random() * 5 + 2;
+      p.style.width = `${size}px`;
+      p.style.height = `${size}px`;
+      p.style.left = `${Math.random() * 100}%`;
+      p.style.top = `${Math.random() * 100}%`;
+      p.style.animationDelay = `${Math.random() * 12}s`;
+      p.style.animationDuration = `${12 + Math.random() * 15}s`;
+      container.appendChild(p);
+    }
+  }
+  createParticles();
+ 
+  // ── Seletor de perfil ─────────────────────────────────────────────────────
+  const HISTORY_KEY = 'nutriai_calc_history';
+  const GOAL_LABELS = {
+    perda_moderada: '🎯 Perda moderada', perda_leve: '🎯 Perda leve',
+    manutencao: '⚖️ Manutenção', ganho_leve: '💪 Ganho leve', ganho_moderado: '💪 Ganho moderado',
+  };
+  const ACTIVITY_LABELS = {
+    '1.2':'Sedentário','1.375':'Lev. ativo','1.55':'Mod. ativo','1.725':'Muito ativo','1.9':'Extremo',
+  };
+ 
+  let activeProfileId = null; // id do entry no histórico local que está ativo
+ 
+  function loadCalcHistory() {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
+    catch { return []; }
+  }
+ 
+  function updateProfileBar(entry) {
+    const bar = document.getElementById('profileSwitcherBar');
+    const label = document.getElementById('psActiveLabel');
+    if (!entry) { bar.style.display = 'none'; return; }
+    bar.style.display = 'flex';
+    label.innerHTML = `<span>${Math.round(entry.meta)} kcal/dia</span> · ${entry.peso}kg · ${entry.altura}cm · ${entry.idade}a · ${GOAL_LABELS[entry.objetivo] || entry.objetivo} · <span style="color:var(--white-muted);font-size:0.72rem;">${entry.date}</span>`;
+  }
+ 
+  function openProfileModal() {
+    const overlay = document.getElementById('psOverlay');
+    overlay.classList.add('open');
+    renderProfileModal();
+  }
+ 
+  function closeProfileModal() {
+    document.getElementById('psOverlay').classList.remove('open');
+  }
+ 
+  function renderProfileModal() {
+    const body = document.getElementById('psModalBody');
+    const history = loadCalcHistory();
+    if (history.length === 0) {
+      body.innerHTML = `<div class="ps-empty">Nenhum cálculo no histórico ainda.<br>Use a <a href="calculadora.html" style="color:var(--green-400);">Calculadora</a> para gerar perfis.</div>`;
+      return;
+    }
+    body.innerHTML = history.map(e => `
+      <div class="ps-item ${e.id === activeProfileId ? 'active' : ''}" onclick="applyProfile(${e.id})">
+        <div class="ps-item-top">
+          <span class="ps-item-date">🕐 ${e.date}</span>
+          <span class="ps-item-badge">${GOAL_LABELS[e.objetivo] || e.objetivo}</span>
+          ${e.id === activeProfileId ? '<span class="ps-item-badge" style="background:rgba(61,214,140,0.2);border-color:var(--green-400);">✓ Ativo</span>' : ''}
+        </div>
+        <div class="ps-item-values">
+          <div class="ps-val"><span>${e.tmb}</span><small>TMB</small></div>
+          <div class="ps-val"><span>${e.get}</span><small>GET</small></div>
+          <div class="ps-val"><span>${e.meta}</span><small>Meta kcal</small></div>
+        </div>
+        <div class="ps-item-params">
+          <b>${e.peso}kg</b> · <b>${e.altura}cm</b> · <b>${e.idade}a</b> · ${e.sexo === 'masculino' ? '♂ Masc.' : '♀ Fem.'} · ${ACTIVITY_LABELS[String(e.atividade)] || e.atividade}
+        </div>
+      </div>
+    `).join('');
+  }
+ 
+  async function applyProfile(id) {
+    const history = loadCalcHistory();
+    const entry = history.find(e => e.id === id);
+    if (!entry) return;
+ 
+    const body = document.getElementById('psModalBody');
+    body.innerHTML = '<div class="ps-loading">⏳ Aplicando perfil e salvando no servidor...</div>';
+ 
+    try {
+      const res = await fetch(`${API_BASE}/calculator/get`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          peso:      entry.peso,
+          altura:    entry.altura,
+          idade:     entry.idade,
+          sexo:      entry.sexo,
+          atividade: entry.atividade,
+          objetivo:  entry.objetivo,
+        }),
+      });
+ 
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || `Erro ${res.status}`);
+      }
+ 
+      const r = await res.json();
+ 
+      // Atualizar stats no dashboard
+      document.getElementById('statTMB').innerText  = Math.round(r.tmb)           + ' kcal';
+      document.getElementById('statGET').innerText  = Math.round(r.get)           + ' kcal';
+      document.getElementById('statMeta').innerText = Math.round(r.meta_calorica) + ' kcal';
+      if (document.getElementById('caloriasMeta'))
+        document.getElementById('caloriasMeta').innerText = Math.round(r.meta_calorica);
+ 
+      // Atualizar meta no gráfico
+      localStorage.setItem('ultimaMeta', Math.round(r.meta_calorica));
+ 
+      activeProfileId = id;
+      updateProfileBar(entry);
+      closeProfileModal();
+      showToast('✅ Perfil aplicado e salvo!');
+ 
+    } catch (err) {
+      showToast(`❌ ${err.message}`, true);
+      renderProfileModal();
+    }
+  }
+ 
+  document.getElementById('switchProfileBtn').addEventListener('click', openProfileModal);
+  document.getElementById('psClose').addEventListener('click', closeProfileModal);
+  document.getElementById('psOverlay').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('psOverlay')) closeProfileModal();
+  });
+ 
+  // Verificar autenticação
+  const token = localStorage.getItem('token');
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+ 
+  if (!token) {
+    window.location.href = 'login.html';
+  }
+ 
+  // Exibir nome do usuário
+  document.getElementById('userName').innerText = usuario.nome || 'Usuário';
+  
+  // Exibir data atual
+  const hoje = new Date();
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  document.getElementById('currentDate').innerHTML = hoje.toLocaleDateString('pt-BR', options);
+ 
+  // Carregar dados do perfil nutricional via API (salvo pela calculadora)
+  async function carregarDadosCalculadora() {
+    try {
+      const res = await fetch(`${API_BASE}/calculator/perfil`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.perfil) {
+          const p = data.perfil;
+          document.getElementById('statTMB').innerText  = Math.round(p.tmb)           + ' kcal';
+          document.getElementById('statGET').innerText  = Math.round(p.get)           + ' kcal';
+          document.getElementById('statMeta').innerText = Math.round(p.meta_calorica) + ' kcal';
+          if (document.getElementById('caloriasMeta'))
+            document.getElementById('caloriasMeta').innerText = Math.round(p.meta_calorica);
+ 
+          // Tentar identificar qual entry do histórico local bate com o perfil do banco
+          const history = loadCalcHistory();
+          const match = history.find(e =>
+            e.peso === p.peso && e.altura === p.altura &&
+            e.idade === p.idade && e.sexo === p.sexo &&
+            String(e.atividade) === String(p.atividade) && e.objetivo === p.objetivo
+          );
+          if (match) { activeProfileId = match.id; updateProfileBar(match); }
+          else if (history.length > 0) { updateProfileBar(null); document.getElementById('profileSwitcherBar').style.display = 'flex'; }
+ 
+          return;
+        }
+      }
+    } catch(e) { console.warn('Perfil não disponível:', e); }
+    // Sem perfil — mostrar link para calcular
+    document.getElementById('statTMB').innerHTML  = '<a href="calculadora.html" style="color:var(--green-400);">Calcular →</a>';
+    document.getElementById('statGET').innerHTML  = '<a href="calculadora.html" style="color:var(--green-400);">Calcular →</a>';
+    document.getElementById('statMeta').innerHTML = '<a href="calculadora.html" style="color:var(--green-400);">Calcular →</a>';
+ 
+    // Mesmo sem perfil no banco, mostrar barra se houver histórico local
+    const history = loadCalcHistory();
+    if (history.length > 0) {
+      document.getElementById('profileSwitcherBar').style.display = 'flex';
+      document.getElementById('psActiveLabel').innerHTML = '<span style="color:var(--white-muted)">Nenhum perfil ativo — selecione um do histórico</span>';
+    }
+  }
+ 
+  // Calcular dias de jornada
+  function calcularDiasJornada() {
+    let dataCadastro = localStorage.getItem('dataCadastro');
+    if (!dataCadastro) {
+      dataCadastro = new Date().toISOString();
+      localStorage.setItem('dataCadastro', dataCadastro);
+    }
+    const inicio = new Date(dataCadastro);
+    const hoje = new Date();
+    const diffTime = Math.abs(hoje - inicio);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    document.getElementById('statDias').innerText = diffDays;
+    return diffDays;
+  }
+ 
+  // Gráfico de progresso
+  let progressChart;
+  function criarGrafico() {
+    const ctx = document.getElementById('progressChart').getContext('2d');
+    progressChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+        datasets: [{
+          label: 'Calorias consumidas',
+          data: [1850, 1920, 1780, 2100, 1950, 2200, 1900],
+          borderColor: '#22C76E',
+          backgroundColor: 'rgba(34, 199, 110, 0.1)',
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: '#3DD68C',
+          pointBorderColor: '#0D0F0E',
+          pointBorderWidth: 2,
+          pointRadius: 5
+        }, {
+          label: 'Meta calórica',
+          data: [2000, 2000, 2000, 2000, 2000, 2000, 2000],
+          borderColor: '#7A8B80',
+          borderDash: [5, 5],
+          fill: false,
+          pointRadius: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            labels: {
+              color: '#B8C4BC',
+              font: { family: "'DM Sans', sans-serif" }
+            }
+          }
+        },
+        scales: {
+          y: {
+            grid: { color: '#2A302C' },
+            ticks: { color: '#B8C4BC' }
+          },
+          x: {
+            grid: { color: '#2A302C' },
+            ticks: { color: '#B8C4BC' }
+          }
+        }
+      }
+    });
+  }
+ 
+  // Atualizar progresso da meta
+  function atualizarProgressoMeta() {
+    const meta = parseFloat(localStorage.getItem('ultimaMeta')) || 2000;
+    const consumido = 1850;
+    const percentual = (consumido / meta) * 100;
+    document.getElementById('caloriasAtuais').innerText = consumido;
+    document.getElementById('calorieProgress').style.width = Math.min(percentual, 100) + '%';
+    
+    const progressoSemana = 65;
+    document.getElementById('weekProgress').innerText = progressoSemana + '%';
+    document.getElementById('weekProgressBar').style.width = progressoSemana + '%';
+  }
+ 
+  // Ver detalhes da dieta
+  async function verDetalhesDieta(dietaId) {
+    try {
+      const response = await fetch(`${API_BASE}/historico/${dietaId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const dieta = await response.json();
+        mostrarModalDieta(dieta);
+      }
+    } catch (error) {
+      console.error('Erro:', error);
+    }
+  }
+ 
+  // Modal para mostrar dieta completa
+  function mostrarModalDieta(dieta) {
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.95);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    `;
+    
+    modal.innerHTML = `
+      <div style="background: #181C1A; border-radius: 24px; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto; padding: 2rem; border: 1px solid #2A302C;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h2 style="color: #22C76E;">${dieta.titulo || 'Dieta'}</h2>
+          <button onclick="this.closest('div').parentElement.remove()" style="background: none; border: none; color: #C73B2B; font-size: 1.5rem; cursor: pointer;">✕</button>
+        </div>
+        <p style="color: #7A8B80; margin-bottom: 1rem;">📅 ${new Date(dieta.data).toLocaleDateString('pt-BR')} | 🔥 ${Math.round(dieta.calorias)} kcal</p>
+        <div style="color: #F4F7F5; line-height: 1.6; white-space: pre-wrap;">${dieta.dieta_gerada}</div>
+        <button onclick="this.closest('div').parentElement.remove()" style="background: #22C76E; border: none; padding: 0.8rem; border-radius: 12px; color: #0D0F0E; font-weight: 600; margin-top: 1rem; width: 100%; cursor: pointer;">Fechar</button>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+  }
+ 
+  // Deletar dieta
+  async function deletarDieta(dietaId, elemento) {
+    if (confirm('Tem certeza que deseja excluir esta dieta?')) {
+      try {
+        const response = await fetch(`${API_BASE}/historico/${dietaId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          elemento.remove();
+          showToast('🗑️ Dieta removida com sucesso');
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+      }
+    }
+  }
+ 
+  // Carregar histórico de dietas do backend (VERSÃO ÚNICA E CORRETA)
+  async function carregarHistorico() {
+    try {
+      const response = await fetch(`${API_BASE}/historico/listar`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const dietas = await response.json();
+        const historyList = document.getElementById('historyList');
+        
+        if (dietas.length === 0) {
+          historyList.innerHTML = '<div class="empty-state">🍽️ Nenhuma dieta registrada ainda.<br>Vá ao chat e peça uma dieta personalizada!</div>';
+        } else {
+          historyList.innerHTML = dietas.slice(0, 5).map(dieta => `
+            <div class="history-item" data-id="${dieta.id}">
+              <div style="flex: 1;">
+                <div class="history-date">📅 ${new Date(dieta.data).toLocaleDateString('pt-BR')}</div>
+                <div style="font-size: 0.85rem; margin-top: 0.3rem;">${dieta.titulo || 'Dieta personalizada'}</div>
+                <div style="font-size: 0.75rem; color: #7A8B80; margin-top: 0.2rem;">${dieta.dieta_gerada.substring(0, 60)}...</div>
+              </div>
+              <div style="text-align: right;">
+                <div class="history-calories">${Math.round(dieta.calorias)} kcal</div>
+                <div style="margin-top: 0.5rem;">
+                  <button onclick="verDetalhesDieta(${dieta.id})" style="background: none; border: none; color: #3DD68C; cursor: pointer; font-size: 0.7rem;">📖 Ver</button>
+                  <button onclick="deletarDieta(${dieta.id}, this.parentElement.parentElement.parentElement)" style="background: none; border: none; color: #C73B2B; cursor: pointer; font-size: 0.7rem; margin-left: 0.5rem;">🗑️</button>
+                </div>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+    } catch (error) {
+      console.log('Erro ao carregar histórico:', error);
+    }
+  }
+ 
+  // Funções auxiliares
+  async function definirMeta() {
+    const novaMeta = prompt('Qual sua meta calórica diária? (kcal)', localStorage.getItem('ultimaMeta') || '2000');
+    if (novaMeta && !isNaN(novaMeta)) {
+      localStorage.setItem('ultimaMeta', novaMeta);
+      await carregarDadosCalculadora();
+      atualizarProgressoMeta();
+      showToast('✅ Meta atualizada com sucesso!');
+    }
+  }
+ 
+  function verHistoricoCompleto() {
+    window.location.href = 'historico.html';
+  }
+ 
+  function showToast(msg) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-message';
+    toast.textContent = msg;
+    toast.style.cssText = 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#16A35A;color:white;padding:0.7rem 1.5rem;border-radius:40px;z-index:1000;';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+ 
+  function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+    window.location.href = 'login.html';
+  }
+ 
+  // Inicialização
+  (async () => {
+    await carregarDadosCalculadora();
+    calcularDiasJornada();
+    criarGrafico();
+    atualizarProgressoMeta();
+    carregarHistorico();
+  })();
+</script>
+ 
+<style>
+  .toast-message {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--green-600);
+    color: var(--white);
+    padding: 0.7rem 1.5rem;
+    border-radius: 40px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    animation: fadeSlideUp 0.3s ease;
+  }
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+</style>
+ 
+</body>
+</html>

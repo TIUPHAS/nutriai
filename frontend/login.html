@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>NutriAI · Login | Inteligência que nutre</title>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --black-pearl: #0D0F0E;
+      --black-deep: #111413;
+      --black-mid: #181C1A;
+      --black-surface: #1F2421;
+      --black-border: #2A302C;
+      
+      --green-100: #C8F5D8;
+      --green-200: #8EEAB0;
+      --green-400: #3DD68C;
+      --green-500: #22C76E;
+      --green-600: #16A35A;
+      --green-800: #0D6B3D;
+      
+      --white: #F4F7F5;
+      --white-dim: #B8C4BC;
+      --white-muted: #7A8B80;
+      
+      --font-head: 'Space Grotesk', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      
+      --shadow-glow: 0 8px 30px rgba(34, 199, 110, 0.08);
+      --shadow-glow-strong: 0 0 20px rgba(34, 199, 110, 0.15);
+    }
+
+    body {
+      background: var(--black-pearl);
+      color: var(--white);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Background decorativo com gradiente e efeito perolado */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 20% 30%, rgba(61, 214, 140, 0.03), transparent 60%),
+                  radial-gradient(circle at 80% 70%, rgba(34, 199, 110, 0.02), transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Partículas animadas (efeito sutil) */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .particle {
+      position: absolute;
+      background: var(--green-400);
+      border-radius: 50%;
+      opacity: 0.1;
+      animation: floatParticle 12s infinite ease-in-out;
+    }
+    @keyframes floatParticle {
+      0%, 100% { transform: translateY(0) translateX(0); opacity: 0.05; }
+      50% { transform: translateY(-30px) translateX(20px); opacity: 0.15; }
+    }
+
+    /* Container principal */
+    .login-container {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 460px;
+      margin: 2rem;
+      animation: fadeSlideUp 0.6s ease-out;
+    }
+
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(25px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Card principal */
+    .login-card {
+      background: var(--black-mid);
+      border: 1px solid var(--black-border);
+      border-radius: 32px;
+      padding: 2.5rem 2rem;
+      backdrop-filter: blur(2px);
+      box-shadow: var(--shadow-glow);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .login-card:hover {
+      box-shadow: var(--shadow-glow-strong);
+      border-color: rgba(61, 214, 140, 0.2);
+    }
+
+    /* Logo area */
+    .login-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .logo-mark {
+      width: 70px;
+      height: 70px;
+      margin-bottom: 1rem;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+      transition: transform 0.2s ease;
+    }
+    .logo-mark:hover {
+      transform: scale(1.02);
+    }
+    .login-logo h1 {
+      font-family: var(--font-head);
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--white) 0%, var(--white-dim) 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+    .login-logo h1 span {
+      background: linear-gradient(135deg, var(--green-400), var(--green-500));
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+    .login-sub {
+      font-size: 0.75rem;
+      color: var(--white-muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-top: 0.5rem;
+    }
+    .tagline {
+      font-size: 0.85rem;
+      color: var(--white-dim);
+      margin-top: 0.5rem;
+      font-weight: 300;
+    }
+
+    /* Formulário */
+    .input-group {
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .input-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--white-muted);
+      font-weight: 500;
+    }
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .input-icon {
+      position: absolute;
+      left: 1rem;
+      color: var(--white-muted);
+      width: 18px;
+      height: 18px;
+      pointer-events: none;
+    }
+    .input-field {
+      width: 100%;
+      background: var(--black-surface);
+      border: 1px solid var(--black-border);
+      border-radius: 16px;
+      padding: 0.9rem 1rem 0.9rem 2.8rem;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      color: var(--white);
+      transition: all 0.25s ease;
+      outline: none;
+    }
+    .input-field:focus {
+      border-color: var(--green-500);
+      box-shadow: 0 0 0 3px rgba(34, 199, 110, 0.1);
+    }
+    .input-field::placeholder {
+      color: var(--white-muted);
+      font-weight: 300;
+      font-size: 0.8rem;
+    }
+
+    /* Opções extras */
+    .options-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 1.2rem 0 1.8rem;
+      font-size: 0.75rem;
+    }
+    .checkbox {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      color: var(--white-dim);
+    }
+    .checkbox input {
+      accent-color: var(--green-500);
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+    .forgot-link {
+      color: var(--green-400);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .forgot-link:hover {
+      color: var(--green-500);
+      text-decoration: underline;
+    }
+
+    /* Botões */
+    .btn-login {
+      width: 100%;
+      background: linear-gradient(95deg, var(--green-500), var(--green-600));
+      border: none;
+      padding: 0.9rem;
+      border-radius: 16px;
+      font-family: var(--font-head);
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--black-pearl);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      letter-spacing: 0.02em;
+    }
+    .btn-login:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.05);
+      box-shadow: 0 8px 20px rgba(34, 199, 110, 0.3);
+    }
+    .btn-login:active {
+      transform: translateY(1px);
+    }
+
+    /* Separador */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 1.8rem 0;
+      color: var(--white-muted);
+      font-size: 0.7rem;
+    }
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: var(--black-border);
+    }
+
+    /* Login social */
+    .social-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+    .social-btn {
+      flex: 1;
+      background: var(--black-surface);
+      border: 1px solid var(--black-border);
+      border-radius: 14px;
+      padding: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--white-dim);
+      font-size: 0.75rem;
+    }
+    .social-btn:hover {
+      border-color: var(--green-600);
+      background: rgba(34, 199, 110, 0.05);
+      transform: translateY(-2px);
+    }
+
+    /* Link cadastro */
+    .register-prompt {
+      text-align: center;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--black-border);
+      font-size: 0.8rem;
+      color: var(--white-muted);
+    }
+    .register-link {
+      color: var(--green-400);
+      text-decoration: none;
+      font-weight: 600;
+      margin-left: 0.3rem;
+      transition: color 0.2s;
+    }
+    .register-link:hover {
+      color: var(--green-500);
+      text-decoration: underline;
+    }
+
+    /* Toast / mensagem flutuante */
+    .toast-message {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--green-600);
+      color: var(--white);
+      padding: 0.7rem 1.5rem;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      animation: toastFade 0.3s ease;
+      font-family: var(--font-body);
+    }
+    @keyframes toastFade {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    /* Loader spinner */
+    .loader {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--black-pearl);
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Responsivo */
+    @media (max-width: 500px) {
+      .login-card {
+        padding: 1.8rem 1.5rem;
+      }
+      .social-btn span {
+        display: none;
+      }
+      .social-btn svg {
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<div class="login-container">
+  <div class="login-card">
+    <!-- Logo e identidade -->
+    <div class="login-logo">
+      <svg class="logo-mark" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="80" height="80" rx="20" fill="#1A2420"/>
+        <path d="M18 58V22" stroke="#F4F7F5" stroke-width="6" stroke-linecap="round"/>
+        <path d="M62 58V22" stroke="#F4F7F5" stroke-width="6" stroke-linecap="round"/>
+        <path d="M18 22L40 44" stroke="#F4F7F5" stroke-width="6" stroke-linecap="round"/>
+        <ellipse cx="50" cy="33" rx="13" ry="7" transform="rotate(-38 50 33)" fill="#22C76E" opacity="0.95"/>
+        <path d="M40 44L62 22" stroke="#0D6B3D" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+        <circle cx="62" cy="22" r="5" fill="#3DD68C"/>
+        <circle cx="62" cy="22" r="2.5" fill="#0D0F0E"/>
+      </svg>
+      <h1>Nutri<span>AI</span></h1>
+      <div class="login-sub">Inteligência que nutre</div>
+      <div class="tagline">Acesse sua jornada nutricional personalizada</div>
+    </div>
+
+    <!-- Formulário de login -->
+    <form id="loginForm">
+      <div class="input-group">
+        <label class="input-label">E-mail ou usuário</label>
+        <div class="input-wrapper">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          <input type="email" id="emailInput" class="input-field" placeholder="seu@email.com" autocomplete="email" required>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Senha</label>
+        <div class="input-wrapper">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <input type="password" id="passwordInput" class="input-field" placeholder="••••••••" autocomplete="current-password" required>
+        </div>
+      </div>
+
+      <div class="options-row">
+        <label class="checkbox">
+          <input type="checkbox" id="rememberCheck"> Lembrar-me
+        </label>
+        <a href="#" class="forgot-link" id="forgotBtn">Esqueceu a senha?</a>
+      </div>
+
+      <button type="submit" class="btn-login" id="loginBtn">
+        <span>Entrar na plataforma</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </button>
+    </form>
+
+    <div class="divider">
+      <div class="divider-line"></div>
+      <span>ou continue com</span>
+      <div class="divider-line"></div>
+    </div>
+
+    <div class="social-buttons">
+      <button class="social-btn" id="googleBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        <span>Google</span>
+      </button>
+      <button class="social-btn" id="appleBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C5.29 17.95 4.5 13.5 6.85 9.6c1.1-1.87 2.8-2.78 4.44-2.78 1.66 0 2.7.85 3.64.85.88 0 2.22-1 3.82-.85.62.03 2.38.25 3.51 1.92-.1.06-2.08 1.25-2.06 3.68.03 2.98 2.61 3.97 2.64 3.98-.02.07-.41 1.41-1.35 2.8-.77 1.14-1.56 2.28-2.84 2.3-.94.01-1.24-.57-2.4-.57-1.15 0-1.5.57-2.45.57zM16.14 3.2c.74-.9 1.23-2.14 1.09-3.4-.92.05-2.04.62-2.7 1.4-.6.72-1.12 1.85-.98 2.95.97.08 1.99-.5 2.59-1.05z"/>
+        </svg>
+        <span>Apple</span>
+      </button>
+    </div>
+
+    <div class="register-prompt">
+      Ainda não tem conta?
+      <a href="cadastro.html" class="register-link" id="registerLink">Criar conta gratuita</a>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+  <script>
+  // --- Efeito de partículas suaves
+  function createParticles() {
+    const particlesContainer = document.getElementById('particles');
+    const particleCount = 25;
+    for (let i = 0; i < particleCount; i++) {
+      const particle = document.createElement('div');
+      particle.classList.add('particle');
+      const size = Math.random() * 6 + 2;
+      particle.style.width = `${size}px`;
+      particle.style.height = `${size}px`;
+      particle.style.left = `${Math.random() * 100}%`;
+      particle.style.top = `${Math.random() * 100}%`;
+      particle.style.animationDelay = `${Math.random() * 10}s`;
+      particle.style.animationDuration = `${10 + Math.random() * 15}s`;
+      particlesContainer.appendChild(particle);
+    }
+  }
+  createParticles();
+
+  // Função para exibir toast
+  function showToast(message, isError = false) {
+    const existingToast = document.querySelector('.toast-message');
+    if (existingToast) existingToast.remove();
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast-message';
+    toast.textContent = message;
+    if (isError) {
+      toast.style.background = '#C73B2B';
+      toast.style.boxShadow = '0 4px 12px rgba(199, 59, 43, 0.2)';
+    } else {
+      toast.style.background = 'var(--green-600)';
+    }
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(-50%) translateY(20px)';
+      setTimeout(() => toast.remove(), 300);
+    }, 2800);
+  }
+
+  // Loading no botão
+  function setButtonLoading(button, isLoading) {
+    if (isLoading) {
+      button.disabled = true;
+      button.style.opacity = '0.7';
+      const originalContent = button.innerHTML;
+      button.dataset.original = originalContent;
+      button.innerHTML = `<span class="loader"></span> Validando...`;
+    } else {
+      button.disabled = false;
+      button.style.opacity = '1';
+      if (button.dataset.original) {
+        button.innerHTML = button.dataset.original;
+      }
+    }
+  }
+
+  // Função de login REAL
+  async function handleLogin(event) {
+    event.preventDefault();
+    
+    const emailInput = document.getElementById('emailInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const rememberCheck = document.getElementById('rememberCheck');
+    const loginBtn = document.getElementById('loginBtn');
+    
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+    
+    // Validação simples
+    if (!email || !password) {
+      showToast('Por favor, preencha e-mail e senha.', true);
+      return;
+    }
+    
+    if (!email.includes('@') || email.length < 5) {
+      showToast('Insira um e-mail válido.', true);
+      return;
+    }
+    
+    if (password.length < 6) {
+      showToast('A senha deve ter no mínimo 6 caracteres.', true);
+      return;
+    }
+    
+    setButtonLoading(loginBtn, true);
+    
+    try {
+      const response = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          senha: password
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Salvar token no localStorage
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('usuario', JSON.stringify(data.usuario));
+        
+        // Lembrar-me: salvar email (nunca salve senha!)
+        if (rememberCheck.checked) {
+          localStorage.setItem('remember_email', email);
+        } else {
+          localStorage.removeItem('remember_email');
+        }
+        
+        showToast('✅ Login bem-sucedido! Redirecionando...');
+        
+        // Redirecionar para dashboard
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1000);
+      } else {
+        showToast(data.detail || '❌ E-mail ou senha incorretos', true);
+      }
+    } catch (error) {
+      console.error('Erro:', error);
+      showToast('❌ Erro de conexão. Verifique se o backend está rodando.', true);
+    } finally {
+      setButtonLoading(loginBtn, false);
+    }
+  }
+
+  // Carregar email salvo (lembrar-me) - VERSÃO CORRIGIDA (apenas uma)
+  function loadRememberedCredentials() {
+    const savedEmail = localStorage.getItem('remember_email');
+    if (savedEmail) {
+      document.getElementById('emailInput').value = savedEmail;
+      document.getElementById('rememberCheck').checked = true;
+    }
+  }
+  
+  // Esqueci a senha
+  document.getElementById('forgotBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    showToast('🔐 Enviamos instruções de recuperação para seu e-mail cadastrado.', false);
+  });
+  
+  // Login com Google / Apple (simulação)
+  document.getElementById('googleBtn').addEventListener('click', () => {
+    showToast('🔐 Integração com Google em desenvolvimento. Use o formulário padrão.', false);
+  });
+  document.getElementById('appleBtn').addEventListener('click', () => {
+    showToast('🍏 Login com Apple em breve. Acompanhe as novidades!', false);
+  });
+  
+  // Adicionar evento de submit ao formulário
+  const form = document.getElementById('loginForm');
+  form.addEventListener('submit', handleLogin);
+  
+  // Carregar dados salvos ao iniciar
+  loadRememberedCredentials();
+  
+  // Animação extra: foco nos campos
+  const inputs = document.querySelectorAll('.input-field');
+  inputs.forEach(input => {
+    input.addEventListener('focus', () => {
+      input.parentElement.style.transform = 'scale(1.01)';
+    });
+    input.addEventListener('blur', () => {
+      input.parentElement.style.transform = 'scale(1)';
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>NutriAI · Calculadora TMB e Gasto Calórico | Metabolismo Inteligente</title>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+ 
+    :root {
+      --black-pearl: #0D0F0E;
+      --black-deep: #111413;
+      --black-mid: #181C1A;
+      --black-surface: #1F2421;
+      --black-border: #2A302C;
+      
+      --green-100: #C8F5D8;
+      --green-200: #8EEAB0;
+      --green-400: #3DD68C;
+      --green-500: #22C76E;
+      --green-600: #16A35A;
+      --green-800: #0D6B3D;
+      
+      --white: #F4F7F5;
+      --white-dim: #B8C4BC;
+      --white-muted: #7A8B80;
+      
+      --blue-info: #3B82F6;
+      --purple-result: #A855F7;
+      --orange-warning: #E6A017;
+      
+      --font-head: 'Space Grotesk', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      
+      --shadow-glow: 0 8px 30px rgba(34, 199, 110, 0.08);
+      --shadow-glow-strong: 0 0 20px rgba(34, 199, 110, 0.15);
+      --transition-smooth: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+ 
+    body {
+      background: var(--black-pearl);
+      color: var(--white);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      position: relative;
+    }
+ 
+    /* Background decorativo */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 20% 30%, rgba(61, 214, 140, 0.04), transparent 60%),
+                  radial-gradient(circle at 80% 70%, rgba(34, 199, 110, 0.03), transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+ 
+    /* Header */
+    .calculator-header {
+      background: var(--black-mid);
+      border-bottom: 1px solid var(--black-border);
+      padding: 1.2rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+    }
+    .header-title h1 {
+      font-family: var(--font-head);
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .header-title h1 span {
+      color: var(--green-400);
+    }
+    .header-title p {
+      font-size: 0.7rem;
+      color: var(--white-muted);
+    }
+    .info-badge {
+      background: rgba(61, 214, 140, 0.1);
+      padding: 0.4rem 1rem;
+      border-radius: 40px;
+      font-size: 0.7rem;
+      border: 1px solid rgba(61, 214, 140, 0.2);
+    }
+ 
+    /* Container principal */
+    .calculator-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 2rem;
+      position: relative;
+      z-index: 2;
+    }
+ 
+    /* Grid das calculadoras */
+    .calculators-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+ 
+    /* Card de calculadora */
+    .calculator-card {
+      background: var(--black-mid);
+      border: 1px solid var(--black-border);
+      border-radius: 32px;
+      overflow: hidden;
+      transition: var(--transition-smooth);
+    }
+    .calculator-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(61, 214, 140, 0.3);
+      box-shadow: var(--shadow-glow);
+    }
+    .card-header {
+      background: var(--black-surface);
+      padding: 1.2rem 1.5rem;
+      border-bottom: 1px solid var(--black-border);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .card-header i {
+      font-size: 1.8rem;
+      color: var(--green-400);
+    }
+    .card-header h2 {
+      font-family: var(--font-head);
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    .card-header p {
+      font-size: 0.7rem;
+      color: var(--white-muted);
+      margin-top: 0.2rem;
+    }
+    .card-body {
+      padding: 1.5rem;
+    }
+ 
+    /* Formulário */
+    .input-group {
+      margin-bottom: 1.2rem;
+    }
+    .input-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--white-muted);
+      margin-bottom: 0.5rem;
+    }
+    .input-label i {
+      font-size: 0.8rem;
+      color: var(--green-400);
+    }
+    .input-field {
+      width: 100%;
+      background: var(--black-surface);
+      border: 1px solid var(--black-border);
+      border-radius: 16px;
+      padding: 0.8rem 1rem;
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+    .input-field:focus {
+      border-color: var(--green-500);
+      box-shadow: 0 0 0 3px rgba(34, 199, 110, 0.1);
+    }
+    .input-field::placeholder {
+      color: var(--white-muted);
+      font-size: 0.8rem;
+    }
+    
+    .radio-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+    }
+    .radio-option input {
+      accent-color: var(--green-500);
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+    .radio-option label {
+      font-size: 0.85rem;
+      color: var(--white-dim);
+      cursor: pointer;
+    }
+ 
+    .select-field {
+      width: 100%;
+      background: var(--black-surface);
+      border: 1px solid var(--black-border);
+      border-radius: 16px;
+      padding: 0.8rem 1rem;
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+ 
+    .calculate-btn {
+      width: 100%;
+      background: linear-gradient(95deg, var(--green-500), var(--green-600));
+      border: none;
+      border-radius: 16px;
+      padding: 0.9rem;
+      color: var(--black-pearl);
+      font-family: var(--font-head);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      margin-top: 0.5rem;
+    }
+    .calculate-btn:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.05);
+      box-shadow: 0 8px 20px rgba(34, 199, 110, 0.3);
+    }
+ 
+    /* Resultado */
+    .result-area {
+      margin-top: 1.5rem;
+      padding: 1.2rem;
+      background: var(--black-surface);
+      border-radius: 20px;
+      border: 1px solid var(--black-border);
+      text-align: center;
+    }
+    .result-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: var(--white-muted);
+      text-transform: uppercase;
+    }
+    .result-value {
+      font-family: var(--font-head);
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--green-400);
+      margin: 0.3rem 0;
+    }
+    .result-unit {
+      font-size: 0.8rem;
+      color: var(--white-muted);
+    }
+    .result-description {
+      font-size: 0.7rem;
+      color: var(--white-dim);
+      margin-top: 0.5rem;
+    }
+ 
+    /* Card de resultado combinado */
+    .combined-result {
+      background: linear-gradient(135deg, var(--black-mid), var(--black-surface));
+      border: 1px solid var(--green-800);
+      border-radius: 32px;
+      padding: 1.8rem;
+      margin-top: 1rem;
+    }
+    .combined-title {
+      font-family: var(--font-head);
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .combined-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      text-align: center;
+    }
+    .stat-item {
+      padding: 0.8rem;
+      background: var(--black-pearl);
+      border-radius: 20px;
+    }
+    .stat-value {
+      font-family: var(--font-head);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--green-400);
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      color: var(--white-muted);
+      margin-top: 0.3rem;
+    }
+    .recommendation {
+      margin-top: 1.2rem;
+      padding: 0.8rem;
+      background: rgba(61, 214, 140, 0.08);
+      border-radius: 16px;
+      font-size: 0.8rem;
+      color: var(--white-dim);
+      text-align: center;
+    }
+ 
+    /* Info adicional */
+    .info-section {
+      background: var(--black-mid);
+      border: 1px solid var(--black-border);
+      border-radius: 24px;
+      padding: 1.5rem;
+      margin-top: 2rem;
+    }
+    .info-title {
+      font-family: var(--font-head);
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .info-card {
+      background: var(--black-surface);
+      border-radius: 16px;
+      padding: 0.8rem;
+    }
+    .info-card h4 {
+      font-size: 0.8rem;
+      color: var(--green-400);
+      margin-bottom: 0.3rem;
+    }
+    .info-card p {
+      font-size: 0.7rem;
+      color: var(--white-muted);
+    }
+ 
+    /* Toast */
+    .toast-msg {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--green-600);
+      color: white;
+      padding: 0.7rem 1.5rem;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      z-index: 1000;
+      animation: fadeUp 0.3s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+ 
+    /* Histórico */
+    .history-section {
+      background: var(--black-mid);
+      border: 1px solid var(--black-border);
+      border-radius: 24px;
+      padding: 1.5rem;
+      margin-top: 2rem;
+    }
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .history-title {
+      font-family: var(--font-head);
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .clear-history-btn {
+      background: rgba(199, 59, 43, 0.15);
+      border: 1px solid rgba(199, 59, 43, 0.3);
+      color: #E05C4A;
+      border-radius: 10px;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .clear-history-btn:hover {
+      background: rgba(199, 59, 43, 0.3);
+    }
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      max-height: 340px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .history-list::-webkit-scrollbar { width: 4px; }
+    .history-list::-webkit-scrollbar-track { background: var(--black-surface); border-radius: 4px; }
+    .history-list::-webkit-scrollbar-thumb { background: var(--black-border); border-radius: 4px; }
+    .history-item {
+      background: var(--black-surface);
+      border: 1px solid var(--black-border);
+      border-radius: 16px;
+      padding: 1rem 1.2rem;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 1rem;
+      transition: border-color 0.2s;
+    }
+    .history-item:hover { border-color: rgba(61, 214, 140, 0.25); }
+    .history-date {
+      font-size: 0.7rem;
+      color: var(--white-muted);
+      white-space: nowrap;
+    }
+    .history-values {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .history-val {
+      text-align: center;
+    }
+    .history-val span {
+      display: block;
+      font-family: var(--font-head);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--green-400);
+    }
+    .history-val small {
+      font-size: 0.65rem;
+      color: var(--white-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .history-params {
+      font-size: 0.7rem;
+      color: var(--white-muted);
+    }
+    .history-params b { color: var(--white-dim); }
+    .history-reuse-btn {
+      background: rgba(61, 214, 140, 0.1);
+      border: 1px solid rgba(61, 214, 140, 0.2);
+      color: var(--green-400);
+      border-radius: 10px;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.72rem;
+      cursor: pointer;
+      font-family: var(--font-body);
+      white-space: nowrap;
+      transition: var(--transition-smooth);
+    }
+    .history-reuse-btn:hover {
+      background: rgba(61, 214, 140, 0.2);
+    }
+ 
+    @media (max-width: 900px) {
+      .calculators-grid {
+        grid-template-columns: 1fr;
+      }
+      .combined-stats {
+        grid-template-columns: 1fr;
+      }
+      .calculator-container {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+ 
+<div class="calculator-header">
+  <div class="header-left">
+    <svg class="logo-icon" viewBox="0 0 80 80" fill="none">
+      <rect width="80" height="80" rx="20" fill="#1A2420"/>
+      <path d="M18 58V22" stroke="#F4F7F5" stroke-width="6" stroke-linecap="round"/>
+      <path d="M62 58V22" stroke="#F4F7F5" stroke-width="6" stroke-linecap="round"/>
+      <path d="M18 22L40 44" stroke="#F4F7F5" stroke-width="6" stroke-linecap="round"/>
+      <ellipse cx="50" cy="33" rx="13" ry="7" transform="rotate(-38 50 33)" fill="#22C76E" opacity="0.95"/>
+      <circle cx="62" cy="22" r="5" fill="#3DD68C"/>
+    </svg>
+    <div class="header-title">
+      <h1>Calculadora <span>Metabólica</span></h1>
+      <p>TMB · Gasto Calórico Total · Metas Personalizadas</p>
+    </div>
+  </div>
+  <div class="info-badge">
+    <i class="fas fa-calculator"></i> Baseado na equação de Mifflin-St Jeor
+  </div>
+</div>
+ 
+<div class="calculator-container">
+  <div class="calculators-grid">
+    <!-- Calculadora TMB -->
+    <div class="calculator-card">
+      <div class="card-header">
+        <i class="fas fa-fire"></i>
+        <div>
+          <h2>Taxa Metabólica Basal (TMB)</h2>
+          <p>Calorias que seu corpo queima em repouso</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="input-group">
+          <label class="input-label"><i class="fas fa-venus-mars"></i> Sexo</label>
+          <div class="radio-group" id="tmbGenderGroup">
+            <label class="radio-option"><input type="radio" name="tmbGender" value="female" checked> <span>Feminino</span></label>
+            <label class="radio-option"><input type="radio" name="tmbGender" value="male"> <span>Masculino</span></label>
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label"><i class="fas fa-weight-scale"></i> Idade (anos)</label>
+          <input type="number" id="tmbAge" class="input-field" placeholder="Ex: 30" min="10" max="120">
+        </div>
+        <div class="input-group">
+          <label class="input-label"><i class="fas fa-weight-hanging"></i> Peso (kg)</label>
+          <input type="number" id="tmbWeight" class="input-field" placeholder="Ex: 70" step="0.1" min="20" max="500">
+        </div>
+        <div class="input-group">
+          <label class="input-label"><i class="fas fa-ruler"></i> Altura (cm)</label>
+          <input type="number" id="tmbHeight" class="input-field" placeholder="Ex: 170" min="100" max="250">
+        </div>
+        <button class="calculate-btn" id="calcTmbBtn"><i class="fas fa-calculator"></i> Calcular TMB</button>
+        
+        <div class="result-area" id="tmbResult">
+          <div class="result-label">SUA TAXA METABÓLICA BASAL</div>
+          <div class="result-value" id="tmbValue">---</div>
+          <div class="result-unit">kcal / dia</div>
+          <div class="result-description">Calorias que seu corpo gasta em repouso total</div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- Calculadora GET (Gasto Energético Total) -->
+    <div class="calculator-card">
+      <div class="card-header">
+        <i class="fas fa-charging-station"></i>
+        <div>
+          <h2>Gasto Calórico Total (GET)</h2>
+          <p>Calorias que você gasta por dia com atividades</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="input-group">
+          <label class="input-label"><i class="fas fa-person-walking"></i> Nível de Atividade Física</label>
+          <select id="activityLevel" class="select-field">
+            <option value="1.2">Sedentário (pouco ou nenhum exercício)</option>
+            <option value="1.375">Levemente ativo (exercício 1-3 dias/semana)</option>
+            <option value="1.55" selected>Moderadamente ativo (exercício 3-5 dias/semana)</option>
+            <option value="1.725">Muito ativo (exercício 6-7 dias/semana)</option>
+            <option value="1.9">Extremamente ativo (atleta, trabalho pesado)</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label class="input-label"><i class="fas fa-bullseye"></i> Objetivo</label>
+          <select id="goalLevel" class="select-field">
+            <option value="0.85">Perda de peso agressiva (-500 kcal/dia)</option>
+            <option value="0.9">Perda de peso moderada (-300 kcal/dia)</option>
+            <option value="1" selected>Manutenção do peso</option>
+            <option value="1.1">Ganho muscular leve (+200 kcal/dia)</option>
+            <option value="1.15">Ganho muscular (+400 kcal/dia)</option>
+          </select>
+        </div>
+        <button class="calculate-btn" id="calcGetBtn"><i class="fas fa-calculator"></i> Calcular GET</button>
+        
+        <div class="result-area" id="getResult">
+          <div class="result-label">SEU GASTO CALÓRICO TOTAL</div>
+          <div class="result-value" id="getValue">---</div>
+          <div class="result-unit">kcal / dia</div>
+          <div class="result-description">Calorias totais gastas incluindo atividades</div>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- Resultado combinado e recomendações -->
+  <div class="combined-result" id="combinedResult" style="display: none;">
+    <div class="combined-title">
+      <i class="fas fa-chart-line"></i> Seu Resumo Metabólico
+    </div>
+    <div class="combined-stats">
+      <div class="stat-item">
+        <div class="stat-value" id="combinedTmb">---</div>
+        <div class="stat-label">TMB (repouso)</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="combinedGet">---</div>
+        <div class="stat-label">GET (total)</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="combinedGoal">---</div>
+        <div class="stat-label">Meta recomendada</div>
+      </div>
+    </div>
+    <div class="recommendation" id="recommendationText">
+      Preencha os dados acima e calcule sua TMB e GET para receber recomendações personalizadas.
+    </div>
+  </div>
+ 
+  <!-- Histórico de cálculos -->
+  <div class="history-section" id="historySection" style="display:none;">
+    <div class="history-header">
+      <div class="history-title">
+        <i class="fas fa-clock-rotate-left" style="color: var(--green-400);"></i>
+        Histórico de Cálculos
+      </div>
+      <button class="clear-history-btn" id="clearHistoryBtn"><i class="fas fa-trash"></i> Limpar histórico</button>
+    </div>
+    <div id="historyList" class="history-list"></div>
+  </div>
+ 
+  <!-- Informações educativas -->
+  <div class="info-section">
+    <div class="info-title">
+      <i class="fas fa-graduation-cap" style="color: var(--green-400);"></i>
+      Entenda seus resultados
+    </div>
+    <div class="info-grid">
+      <div class="info-card">
+        <h4><i class="fas fa-fire"></i> Taxa Metabólica Basal (TMB)</h4>
+        <p>Quantidade mínima de calorias que seu corpo necessita para funções vitais: respirar, bater o coração, manter temperatura corporal. Corresponde a ~60-75% do gasto diário.</p>
+      </div>
+      <div class="info-card">
+        <h4><i class="fas fa-person-running"></i> Gasto Calórico Total (GET)</h4>
+        <p>Soma da TMB + efeito térmico dos alimentos + atividades físicas + atividades diárias. É o número real de calorias que você queima por dia.</p>
+      </div>
+      <div class="info-card">
+        <h4><i class="fas fa-chart-simple"></i> Para emagrecer</h4>
+        <p>Consuma 300-500 calorias a menos que seu GET diário. Perda saudável: 0,5 a 1kg por semana. Nunca consuma menos que sua TMB.</p>
+      </div>
+      <div class="info-card">
+        <h4><i class="fas fa-dumbbell"></i> Para ganhar massa</h4>
+        <p>Adicione 200-400 calorias ao seu GET. Priorize proteínas (1.6-2.2g/kg) e treino de força para direcionar calorias para músculos.</p>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<script src="config.js"></script>
+  <script>
+ 
+  // Elementos
+  const tmbAge     = document.getElementById('tmbAge');
+  const tmbWeight  = document.getElementById('tmbWeight');
+  const tmbHeight  = document.getElementById('tmbHeight');
+  const tmbGenderRadios = document.querySelectorAll('input[name="tmbGender"]');
+  const activityLevel   = document.getElementById('activityLevel');
+  const goalLevel       = document.getElementById('goalLevel');
+ 
+  const tmbValueSpan    = document.getElementById('tmbValue');
+  const getValueSpan    = document.getElementById('getValue');
+  const combinedResult  = document.getElementById('combinedResult');
+  const combinedTmbSpan = document.getElementById('combinedTmb');
+  const combinedGetSpan = document.getElementById('combinedGet');
+  const combinedGoalSpan= document.getElementById('combinedGoal');
+  const recText         = document.getElementById('recommendationText');
+ 
+  // ── Histórico ─────────────────────────────────────────────────────────────
+  const HISTORY_KEY = 'nutriai_calc_history';
+  const MAX_HISTORY = 10;
+ 
+  function loadHistory() {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
+    catch { return []; }
+  }
+ 
+  function saveHistory(history) {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  }
+ 
+  const GOAL_LABELS = {
+    perda_moderada: 'Perda moderada',
+    perda_leve:     'Perda leve',
+    manutencao:     'Manutenção',
+    ganho_leve:     'Ganho leve',
+    ganho_moderado: 'Ganho moderado',
+  };
+ 
+  const ACTIVITY_LABELS = {
+    '1.2':   'Sedentário',
+    '1.375': 'Lev. ativo',
+    '1.55':  'Mod. ativo',
+    '1.725': 'Muito ativo',
+    '1.9':   'Extremo',
+  };
+ 
+  function addToHistory(dados, result) {
+    const history = loadHistory();
+    const entry = {
+      id: Date.now(),
+      date: new Date().toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }),
+      tmb:  Math.round(result.tmb),
+      get:  Math.round(result.get),
+      meta: Math.round(result.meta_calorica),
+      peso: dados.weight,
+      altura: dados.height,
+      idade: Math.round(dados.age),
+      sexo: dados.gender,
+      atividade: dados.activity,
+      objetivo: dados.objetivo,
+    };
+    history.unshift(entry);
+    if (history.length > MAX_HISTORY) history.pop();
+    saveHistory(history);
+    renderHistory();
+  }
+ 
+  function renderHistory() {
+    const history = loadHistory();
+    const section = document.getElementById('historySection');
+    const list    = document.getElementById('historyList');
+ 
+    if (history.length === 0) {
+      section.style.display = 'none';
+      return;
+    }
+    section.style.display = 'block';
+    list.innerHTML = history.map(e => `
+      <div class="history-item">
+        <div class="history-date"><i class="fas fa-clock" style="margin-right:4px;"></i>${e.date}</div>
+        <div>
+          <div class="history-values">
+            <div class="history-val"><span>${e.tmb}</span><small>TMB</small></div>
+            <div class="history-val"><span>${e.get}</span><small>GET</small></div>
+            <div class="history-val"><span>${e.meta}</span><small>Meta</small></div>
+          </div>
+          <div class="history-params" style="margin-top:0.4rem;">
+            <b>${e.peso}kg</b> · <b>${e.altura}cm</b> · <b>${e.idade}a</b> · ${e.sexo === 'masculino' ? '♂' : '♀'} · ${ACTIVITY_LABELS[String(e.atividade)] || e.atividade} · ${GOAL_LABELS[e.objetivo] || e.objetivo}
+          </div>
+        </div>
+        <button class="history-reuse-btn" onclick="reusarCalculo(${e.id})"><i class="fas fa-rotate-left"></i> Reusar</button>
+      </div>
+    `).join('');
+  }
+ 
+  function reusarCalculo(id) {
+    const entry = loadHistory().find(e => e.id === id);
+    if (!entry) return;
+ 
+    tmbAge.value    = entry.idade;
+    tmbWeight.value = entry.peso;
+    tmbHeight.value = entry.altura;
+ 
+    for (const r of tmbGenderRadios) {
+      r.checked = (r.value === (entry.sexo === 'masculino' ? 'male' : 'female'));
+    }
+ 
+    activityLevel.value = String(entry.atividade);
+ 
+    const goalReverseMap = {
+      perda_moderada: '0.85', perda_leve: '0.9', manutencao: '1', ganho_leve: '1.1', ganho_moderado: '1.15',
+    };
+    goalLevel.value = goalReverseMap[entry.objetivo] || '1';
+ 
+    showToast('✅ Dados recarregados! Clique em Calcular para confirmar.');
+  }
+ 
+  // ── Ler valores do formulário ─────────────────────────────────────────────
+  function lerFormulario() {
+    const age    = parseFloat(tmbAge.value);
+    const weight = parseFloat(tmbWeight.value);
+    const height = parseFloat(tmbHeight.value);
+ 
+    let gender = 'feminino';
+    for (const r of tmbGenderRadios) {
+      if (r.checked) { gender = r.value === 'male' ? 'masculino' : 'feminino'; break; }
+    }
+ 
+    const activity = parseFloat(activityLevel.value);
+ 
+    const goalMap = {
+      '0.85': 'perda_moderada',
+      '0.9':  'perda_leve',
+      '1':    'manutencao',
+      '1.1':  'ganho_leve',
+      '1.15': 'ganho_moderado',
+    };
+    const objetivo = goalMap[goalLevel.value] || 'manutencao';
+ 
+    return { age, weight, height, gender, activity, objetivo };
+  }
+ 
+  // ── Validar campos ────────────────────────────────────────────────────────
+  function validar({ age, weight, height }) {
+    if (isNaN(age)    || age    <= 0) { showToast('⚠️ Informe uma idade válida.', true);   return false; }
+    if (isNaN(weight) || weight <= 0) { showToast('⚠️ Informe um peso válido.', true);     return false; }
+    if (isNaN(height) || height <= 0) { showToast('⚠️ Informe uma altura válida.', true);  return false; }
+    return true;
+  }
+ 
+  // ── Chamar API e atualizar interface ──────────────────────────────────────
+  async function calcular() {
+    const dados = lerFormulario();
+    if (!validar(dados)) return;
+ 
+    // Desabilitar botões durante o cálculo
+    document.getElementById('calcTmbBtn').disabled = true;
+    document.getElementById('calcGetBtn').disabled = true;
+ 
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+ 
+      const res = await fetch(`${API_BASE}/calculator/get`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          peso:      dados.weight,
+          altura:    dados.height,
+          idade:     Math.round(dados.age),
+          sexo:      dados.gender,
+          atividade: dados.activity,
+          objetivo:  dados.objetivo,
+        })
+      });
+ 
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || `Erro ${res.status}`);
+      }
+ 
+      const r = await res.json();
+ 
+      // Atualizar painel TMB
+      tmbValueSpan.textContent  = Math.round(r.tmb);
+ 
+      // Atualizar painel GET
+      getValueSpan.textContent  = Math.round(r.get);
+ 
+      // Atualizar resumo combinado
+      combinedTmbSpan.textContent  = Math.round(r.tmb);
+      combinedGetSpan.textContent  = Math.round(r.get);
+      combinedGoalSpan.textContent = Math.round(r.meta_calorica);
+      combinedResult.style.display = 'block';
+ 
+      // Recomendação personalizada
+      gerarRecomendacao(r.tmb, r.get, r.meta_calorica, dados.objetivo);
+ 
+      // Salvar no localStorage para o dashboard usar
+      localStorage.setItem('ultimaTMB',  Math.round(r.tmb));
+      localStorage.setItem('ultimoGET',  Math.round(r.get));
+      localStorage.setItem('ultimaMeta', Math.round(r.meta_calorica));
+ 
+      // Adicionar ao histórico
+      addToHistory(dados, r);
+ 
+      showToast('✅ Cálculo atualizado!');
+ 
+    } catch (err) {
+      showToast(`❌ ${err.message}`, true);
+    } finally {
+      document.getElementById('calcTmbBtn').disabled = false;
+      document.getElementById('calcGetBtn').disabled = false;
+    }
+  }
+ 
+  // ── Recomendação personalizada ────────────────────────────────────────────
+  function gerarRecomendacao(tmb, get, meta, objetivo) {
+    const nomes = {
+      perda_moderada: 'perda de peso moderada',
+      perda_leve:     'perda de peso leve',
+      manutencao:     'manutenção do peso',
+      ganho_leve:     'ganho muscular leve',
+      ganho_moderado: 'ganho muscular moderado',
+    };
+    const nome = nomes[objetivo] || 'seu objetivo';
+    let txt = '';
+ 
+    if (objetivo.startsWith('perda')) {
+      const deficit = Math.round(get - meta);
+      txt = `🎯 Para <strong>${nome}</strong>, consuma <strong>${Math.round(meta)} kcal/dia</strong>. `
+          + `Isso representa um déficit de ${deficit} kcal. `
+          + `⚠️ Nunca consuma menos que sua TMB (${Math.round(tmb)} kcal). Priorize proteínas e fibras.`;
+    } else if (objetivo === 'manutencao') {
+      txt = `⚖️ Para <strong>${nome}</strong>, consuma <strong>${Math.round(meta)} kcal/dia</strong>. `
+          + `Distribua entre 40% carboidratos, 30% proteínas e 30% gorduras.`;
+    } else {
+      const surplus = Math.round(meta - get);
+      txt = `💪 Para <strong>${nome}</strong>, consuma <strong>${Math.round(meta)} kcal/dia</strong>. `
+          + `Superávit de ${surplus} kcal. Priorize proteínas (1.6–2.2 g/kg) e treino de força.`;
+    }
+ 
+    recText.innerHTML = txt;
+  }
+ 
+  // ── Toast ─────────────────────────────────────────────────────────────────
+  function showToast(msg, isError = false) {
+    const old = document.querySelector('.toast-msg');
+    if (old) old.remove();
+    const t = document.createElement('div');
+    t.className = 'toast-msg';
+    t.textContent = msg;
+    if (isError) t.style.background = '#C73B2B';
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+ 
+  // ── Event Listeners ───────────────────────────────────────────────────────
+  // Somente os botões disparam o cálculo — sem auto-cálculo
+  document.getElementById('calcTmbBtn').addEventListener('click', calcular);
+  document.getElementById('calcGetBtn').addEventListener('click', calcular);
+ 
+  // Limpar histórico
+  document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+    if (confirm('Tem certeza que deseja limpar todo o histórico?')) {
+      localStorage.removeItem(HISTORY_KEY);
+      renderHistory();
+      showToast('🗑️ Histórico apagado.');
+    }
+  });
+ 
+  // Carregar histórico ao abrir a página (sem calcular nada)
+  renderHistory();
+</script>
+</body>
+</html>

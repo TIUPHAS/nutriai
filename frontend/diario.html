@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>NutriAI · Diário Alimentar | Tracking de Macronutrientes</title>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js para gráficos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+ 
+    :root {
+      --black-pearl: #0D0F0E;
+      --black-deep: #111413;
+      --black-mid: #181C1A;
+      --black-surface: #1F2421;
+      --black-border: #2A302C;
+      
+      --green-100: #C8F5D8;
+      --green-200: #8EEAB0;
+      --green-400: #3DD68C;
+      --green-500: #22C76E;
+      --green-600: #16A35A;
+      --green-800: #0D6B3D;
+      
+      --white: #F4F7F5;
+      --white-dim: #B8C4BC;
+      --white-muted: #7A8B80;
+      
+      --orange-warning: #E6A017;
+      --red-alert: #C73B2B;
+      
+      --font-head: 'Space Grotesk', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      
+      --shadow-glow: 0 8px 30px rgba(34, 199, 110, 0.08);
+      --transition-smooth: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+ 
+    body {
+      background: var(--black-pearl);
+      color: var(--white);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      position: relative;
+    }
+ 
+    /* Background decorativo */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 20% 30%, rgba(61, 214, 140, 0.04), transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+ 
+    /* Header */
+    .diary-header {
+      background: var(--black-mid);
+      border-bottom: 1px solid var(--black-border);
+      padding: 1.2rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+      .autocomplete-wrapper {
+    position: relative;
+  }
+  
+  .autocomplete-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--black-surface);
+    border: 1px solid var(--black-border);
+    border-radius: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+  }
+  
+  .suggestion-item {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .suggestion-item:hover {
+    background: var(--green-800);
+  }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+    }
+    .header-title h1 {
+      font-family: var(--font-head);
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .header-title h1 span {
+      color: var(--green-400);
+    }
+    .header-title p {
+      font-size: 0.7rem;
+      color: var(--white-muted);
+    }
+    .date-selector {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      background: var(--black-surface);
+      padding: 0.4rem 1rem;
+      border-radius: 40px;
+      border: 1px solid var(--black-border);
+    }
+    .date-nav {
+      background: none;
+      border: none;
+      color: var(--green-400);
+      cursor: pointer;
+      font-size: 1rem;
+      transition: var(--transition-smooth);
+    }
+    .date-nav:hover {
+      transform: scale(1.1);
+    }
+    .current-date {
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+ 
+    /* Container principal */
+    .diary-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem;
+      position: relative;
+      z-index: 2;
+    }
+ 
+    /* Cards de macros principais */
+    .macros-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.2rem;
+      margin-bottom: 2rem;
+    }
+    .macro-card {
+      background: var(--black-mid);
+      border: 1px solid var(--black-border);
+      border-radius: 24px;
+      padding: 1.2rem;
+      transition: var(--transition-smooth);
+    }
+    .macro-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(61, 214, 140, 0.3);
+    }
+    .macro-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.8rem;
+    }
+    .macro-title {
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--white-muted);
+    }
+    .macro-icon {
+      font-size: 1.4rem;
+    }
+    .macro-value {
+      font-family: var(--font-head);
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+    .macro-goal {
+      font-size: 0.7rem;
+      color: var(--white-muted);
+      margin-bottom: 0.6rem;
+    }
+    .progress-bar {
+      height: 6px;
+      background: var(--black-border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.5s ease;
+    }
+    .fill-calories { background: linear-gradient(90deg, var(--green-600), var(--green-400)); }
+    .fill-protein { background: linear-gradient(90deg, #3DD68C, #22C76E); }
+    .fill-carbs { background: linear-gradient(90deg, #E6A017, #F5A623); }
+    .fill-fat { background: linear-gradient(90deg, #C73B2B, #E05A3A); }
+    .alert-badge {
+      font-size: 0.6rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 20px;
+      background: rgba(199, 59, 43, 0.15);
+      color: var(--red-alert);
+    }
+ 
+    /* Seção de registro de refeições */
+    .section-title {
+      font-family: var(--font-head);
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-title i {
+      color: var(--green-400);
+    }
+ 
+    /* Formulário de adicionar refeição */
+    .add-meal-card {
+      background: var(--black-mid);
+      border: 1px solid var(--black-border);
+      border-radius: 24px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr auto;
+      gap: 1rem;
+      align-items: end;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .form-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--white-muted);
+    }
+    .form-input, .form-select {
+      background: var(--black-surface);
+      border: 1px solid var(--black-border);
+      border-radius: 14px;
+      padding: 0.7rem 1rem;
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: var(--green-500);
+    }
+    .add-btn {
+      background: linear-gradient(95deg, var(--green-500), var(--green-600));
+      border: none;
+      border-radius: 14px;
+      padding: 0.7rem 1.5rem;
+      color: var(--black-pearl);
+      font-family: var(--font-head);
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .add-btn:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.05);
+    }
+ 
+    /* Lista de refeições */
+    .meals-list {
+      background: var(--black-mid);
+      border: 1px solid var(--black-border);
+      border-radius: 24px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+    .meal-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--black-border);
+      transition: var(--transition-smooth);
+    }
+    .meal-item:last-child {
+      border-bottom: none;
+    }
+    .meal-item:hover {
+      background: var(--black-surface);
+    }
+    .meal-info {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .meal-name {
+      font-weight: 600;
+      min-width: 150px;
+    }
+    .meal-category {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.6rem;
+      background: var(--black-border);
+      border-radius: 20px;
+      color: var(--white-dim);
+    }
+    .meal-nutrients {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+    }
+    .meal-nutrients span {
+      color: var(--white-muted);
+    }
+    .meal-nutrients strong {
+      color: var(--white-dim);
+    }
+    .delete-meal {
+      background: none;
+      border: none;
+      color: var(--white-muted);
+      cursor: pointer;
+      padding: 0.3rem 0.6rem;
+      border-radius: 8px;
+      transition: var(--transition-smooth);
+    }
+    .delete-meal:hover {
+      color: var(--red-alert);
+      background: rgba(199, 59, 43, 0.1);
+    }
+ 
+    /* Gráfico e resumo */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .chart-card {
+      background: var(--black-mid);
+      border: 1px solid var(--black-border);
+      border-radius: 24px;
+      padding: 1.2rem;
+    }
+    .chart-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--white-dim);
+    }
+    canvas {
+      max-height: 250px;
+      width: 100%;
+    }
+ 
+    /* Alertas */
+    .alert-card {
+      background: rgba(230, 160, 23, 0.08);
+      border: 1px solid rgba(230, 160, 23, 0.3);
+      border-radius: 20px;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .alert-icon {
+      font-size: 1.5rem;
+    }
+    .alert-text {
+      font-size: 0.8rem;
+      color: var(--orange-warning);
+    }
+ 
+    /* Responsivo */
+    @media (max-width: 1000px) {
+      .form-row {
+        grid-template-columns: 1fr 1fr;
+      }
+      .macros-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 640px) {
+      .diary-container {
+        padding: 1rem;
+      }
+      .macros-grid {
+        grid-template-columns: 1fr;
+      }
+      .meal-info {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+ 
+    /* Toast */
+    .toast-msg {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--green-600);
+      color: white;
+      padding: 0.7rem 1.5rem;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      z-index: 1000;
+      animation: fadeUp 0.3s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    /* ── Seletor de perfil ── */
+    .profile-switcher-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--black-mid);
+      border: 1px solid var(--black-border);
+      border-radius: 16px;
+      padding: 0.7rem 1.2rem;
+      margin-bottom: 1.2rem;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+    .ps-label { font-size: 0.72rem; color: var(--white-muted); display: flex; align-items: center; gap: 0.4rem; }
+    .ps-active { font-size: 0.8rem; color: var(--white-dim); font-weight: 500; margin-top: 0.2rem; }
+    .ps-active span { color: var(--green-400); }
+    .switch-profile-btn {
+      background: rgba(61,214,140,0.1);
+      border: 1px solid rgba(61,214,140,0.25);
+      color: var(--green-400);
+      border-radius: 10px;
+      padding: 0.4rem 1rem;
+      font-size: 0.76rem;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .switch-profile-btn:hover { background: rgba(61,214,140,0.18); }
+ 
+    /* Modal */
+    .ps-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.82);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .ps-overlay.open { display: flex; }
+    .ps-modal {
+      background: var(--black-mid);
+      border: 1px solid var(--black-border);
+      border-radius: 28px;
+      width: 100%;
+      max-width: 620px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    }
+    .ps-modal-header {
+      padding: 1.3rem 1.6rem;
+      border-bottom: 1px solid var(--black-border);
+      display: flex; justify-content: space-between; align-items: center;
+      background: var(--black-surface);
+    }
+    .ps-modal-header h3 { font-family: var(--font-head); font-size: 1rem; font-weight: 600; }
+    .ps-modal-close { background: none; border: none; color: var(--white-muted); font-size: 1.3rem; cursor: pointer; transition: color 0.2s; }
+    .ps-modal-close:hover { color: var(--white); }
+    .ps-modal-body { padding: 1.2rem 1.4rem; overflow-y: auto; flex: 1; }
+    .ps-modal-body::-webkit-scrollbar { width: 4px; }
+    .ps-modal-body::-webkit-scrollbar-thumb { background: var(--black-border); border-radius: 4px; }
+    .ps-empty { text-align: center; padding: 2.5rem 1rem; color: var(--white-muted); font-size: 0.85rem; }
+    .ps-item {
+      background: var(--black-surface);
+      border: 1px solid var(--black-border);
+      border-radius: 16px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 0.8rem;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .ps-item:hover { border-color: rgba(61,214,140,0.4); background: rgba(61,214,140,0.04); }
+    .ps-item.active { border-color: var(--green-500); background: rgba(61,214,140,0.06); }
+    .ps-item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem; }
+    .ps-item-date { font-size: 0.7rem; color: var(--white-muted); }
+    .ps-item-badge { font-size: 0.65rem; padding: 0.2rem 0.6rem; border-radius: 20px; background: rgba(61,214,140,0.1); color: var(--green-400); border: 1px solid rgba(61,214,140,0.2); }
+    .ps-item-values { display: flex; gap: 1.2rem; flex-wrap: wrap; }
+    .ps-val { text-align: center; }
+    .ps-val span { display: block; font-family: var(--font-head); font-size: 1.05rem; font-weight: 700; color: var(--green-400); }
+    .ps-val small { font-size: 0.62rem; color: var(--white-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .ps-item-params { margin-top: 0.5rem; font-size: 0.68rem; color: var(--white-muted); }
+    .ps-item-params b { color: var(--white-dim); }
+    .ps-loading { text-align: center; padding: 1.5rem; color: var(--white-muted); font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+ 
+<div class="diary-header">
+  <div class="header-left">
+    <svg class="logo-icon" viewBox="0 0 80 80" fill="none">
+      <rect width="80" height="80" rx="20" fill="#1A2420"/>
+      <path d="M18 58V22" stroke="#F4F7F5" stroke-width="6" stroke-linecap="round"/>
+      <path d="M62 58V22" stroke="#F4F7F5" stroke-width="6" stroke-linecap="round"/>
+      <path d="M18 22L40 44" stroke="#F4F7F5" stroke-width="6" stroke-linecap="round"/>
+      <ellipse cx="50" cy="33" rx="13" ry="7" transform="rotate(-38 50 33)" fill="#22C76E" opacity="0.95"/>
+      <circle cx="62" cy="22" r="5" fill="#3DD68C"/>
+    </svg>
+    <div class="header-title">
+      <h1>Diário <span>Alimentar</span></h1>
+      <p>Registre refeições · Acompanhe seus macros</p>
+    </div>
+  </div>
+  <div class="date-selector">
+    <button class="date-nav" id="prevDayBtn">←</button>
+    <span class="current-date" id="currentDate"></span>
+    <button class="date-nav" id="nextDayBtn">→</button>
+  </div>
+</div>
+ 
+<div class="diary-container">
+  <!-- Modal seletor de perfil -->
+  <div class="ps-overlay" id="psOverlay">
+    <div class="ps-modal">
+      <div class="ps-modal-header">
+        <h3>🔄 Trocar perfil ativo</h3>
+        <button class="ps-modal-close" id="psClose">✕</button>
+      </div>
+      <div class="ps-modal-body" id="psModalBody">
+        <div class="ps-loading">Carregando histórico...</div>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- Barra de perfil ativo -->
+  <div class="profile-switcher-bar" id="profileSwitcherBar" style="display:none;">
+    <div>
+      <div class="ps-label">📋 Perfil de metas ativo</div>
+      <div class="ps-active" id="psActiveLabel">—</div>
+    </div>
+    <button class="switch-profile-btn" id="switchProfileBtn">🔄 Trocar perfil</button>
+  </div>
+ 
+  <!-- Alertas dinâmicos -->
+  <div id="alertContainer"></div>
+ 
+  <!-- Badge de objetivo + Cards de macros principais -->
+  <div style="margin-bottom:1rem;">
+    <span id="goalBadge" style="display:none;background:var(--black-surface);border:1px solid var(--black-border);
+      color:var(--green-400);padding:0.4rem 1rem;border-radius:20px;font-size:0.85rem;font-family:var(--font-head);">
+    </span>
+    <span style="color:var(--white-muted);font-size:0.8rem;margin-left:0.5rem;">
+      — metas calculadas automaticamente pela calculadora
+    </span>
+  </div>
+  <div class="macros-grid">
+    <div class="macro-card">
+      <div class="macro-header"><span class="macro-title">🔥 CALORIAS</span><span class="macro-icon">🔥</span></div>
+      <div class="macro-value" id="caloriesValue">0</div>
+      <div class="macro-goal">Meta: <span id="caloriesGoal">—</span> kcal</div>
+      <div class="progress-bar"><div class="progress-fill fill-calories" id="caloriesFill" style="width: 0%"></div></div>
+    </div>
+    <div class="macro-card">
+      <div class="macro-header"><span class="macro-title">🥩 PROTEÍNAS</span><span class="macro-icon">🥩</span></div>
+      <div class="macro-value" id="proteinValue">0</div>
+      <div class="macro-goal">Meta: <span id="proteinGoal">140</span> g</div>
+      <div class="progress-bar"><div class="progress-fill fill-protein" id="proteinFill" style="width: 0%"></div></div>
+    </div>
+    <div class="macro-card">
+      <div class="macro-header"><span class="macro-title">🍚 CARBOIDRATOS</span><span class="macro-icon">🍚</span></div>
+      <div class="macro-value" id="carbsValue">0</div>
+      <div class="macro-goal">Meta: <span id="carbsGoal">280</span> g</div>
+      <div class="progress-bar"><div class="progress-fill fill-carbs" id="carbsFill" style="width: 0%"></div></div>
+    </div>
+    <div class="macro-card">
+      <div class="macro-header"><span class="macro-title">🧈 GORDURAS</span><span class="macro-icon">🧈</span></div>
+      <div class="macro-value" id="fatValue">0</div>
+      <div class="macro-goal">Meta: <span id="fatGoal">70</span> g</div>
+      <div class="progress-bar"><div class="progress-fill fill-fat" id="fatFill" style="width: 0%"></div></div>
+    </div>
+  </div>
+ 
+  <!-- Adicionar refeição -->
+<div class="add-meal-card">
+  <div class="section-title"><i class="fas fa-plus-circle"></i> Registrar refeição</div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">Refeição</label>
+      <select id="mealCategory" class="form-select">
+        <option value="cafe">Café da Manhã</option>
+        <option value="almoco">Almoço</option>
+        <option value="cafe_tarde">Café da Tarde</option>
+        <option value="jantar">Jantar</option>
+      </select>
+    </div>
+    <div class="form-group autocomplete-wrapper">
+    <label class="form-label">Alimento</label>
+    <input type="text" id="foodName" class="form-input" placeholder="Ex: Frango grelhado" autocomplete="off">
+  <div id="suggestions" class="autocomplete-suggestions"></div>
+</div>
+    <div class="form-group">
+      <label class="form-label">Peso (g)</label>
+      <input type="number" id="foodWeight" class="form-input" value="100" step="1" min="1">
+    </div>
+    <button class="add-btn" id="calculateBtn"><i class="fas fa-calculator"></i> Calcular</button>
+  </div>
+  <!-- Área de resultado do cálculo -->
+  <div id="calcResult" style="margin-top: 1rem; display: none;">
+    <div style="display: flex; gap: 1rem; align-items: center;">
+      <span><strong id="resultName"></strong> (<span id="resultWeight"></span>g):</span>
+      <span>🥩 <strong id="resultProtein"></strong>g prot</span>
+      <span>🍚 <strong id="resultCarbs"></strong>g carb</span>
+      <span>🧈 <strong id="resultFat"></strong>g gord</span>
+      <span>🔥 <strong id="resultCalories"></strong> kcal</span>
+      <button class="add-btn" id="confirmAddBtn" style="padding: 0.3rem 1rem;">Adicionar</button>
+    </div>
+  </div>
+</div>
+ 
+  <!-- Lista de refeições -->
+  <div class="meals-list">
+    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--black-border); background: var(--black-surface);">
+      <span style="font-size: 0.7rem; font-weight: 600;">REFEIÇÕES REGISTRADAS</span>
+    </div>
+    <div id="mealsContainer"></div>
+  </div>
+ 
+  <!-- Gráficos e estatísticas -->
+  <div class="stats-grid">
+    <div class="chart-card">
+      <div class="chart-title">📊 Distribuição de Macronutrientes (g)</div>
+      <canvas id="macrosChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">📈 Progresso semanal (kcal)</div>
+      <canvas id="weeklyChart"></canvas>
+    </div>
+  </div>
+</div>
+ 
+<script src="config.js"></script>
+  <script>
+  // ── Estado ──────────────────────────────────────────────────────────────────
+  let meals = [];
+  let currentDate = new Date();
+ 
+  // Metas diárias — sobrescritas pelo perfil do usuário (calculadora)
+  let dailyGoals = {
+    calories: 2000,
+    protein:  120,
+    carbs:    250,
+    fat:       65,
+  };
+ 
+  let currentTotals = { calories: 0, protein: 0, carbs: 0, fat: 0 };
+ 
+  // Gráfico semanal — dados reais da API (não mais hardcoded)
+  let weeklyCaloriesData = [0, 0, 0, 0, 0, 0, 0];
+  let weeklyLabels       = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+ 
+  const mealsContainer  = document.getElementById('mealsContainer');
+  const alertContainer  = document.getElementById('alertContainer');
+ 
+ 
+  // ── Utilitário: data formatada YYYY-MM-DD ────────────────────────────────
+  function toISODate(d) {
+    return d.toISOString().split('T')[0];
+  }
+ 
+  // ── Carregar perfil do usuário (metas da calculadora) ────────────────────
+  async function loadUserProfile() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/calculator/perfil`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.perfil) {
+        const p = data.perfil;
+        dailyGoals = {
+          calories: Math.round(p.meta_calorica  || dailyGoals.calories),
+          protein:  Math.round(p.meta_proteina  || dailyGoals.protein),
+          carbs:    Math.round(p.meta_carbo     || dailyGoals.carbs),
+          fat:      Math.round(p.meta_gordura   || dailyGoals.fat),
+        };
+        // Atualizar exibição das metas
+        document.getElementById('caloriesGoal').innerText = dailyGoals.calories;
+        document.getElementById('proteinGoal').innerText  = dailyGoals.protein;
+        document.getElementById('carbsGoal').innerText    = dailyGoals.carbs;
+        document.getElementById('fatGoal').innerText      = dailyGoals.fat;
+ 
+        // Mostrar badge do objetivo
+        const objetivoMap = {
+          perda_leve:     '🎯 Perda leve',
+          perda_moderada: '🎯 Perda moderada',
+          manutencao:     '⚖️ Manutenção',
+          ganho_leve:     '💪 Ganho leve',
+          ganho_moderado: '💪 Ganho moderado',
+        };
+        const badgeEl = document.getElementById('goalBadge');
+        if (badgeEl && p.objetivo) {
+          badgeEl.textContent = objetivoMap[p.objetivo] || p.objetivo;
+          badgeEl.style.display = 'inline-block';
+        }
+ 
+        // Tentar identificar entry ativo no histórico local
+        const history = loadCalcHistory();
+        const match = history.find(e =>
+          e.peso === p.peso && e.altura === p.altura &&
+          e.idade === p.idade && e.sexo === p.sexo &&
+          String(e.atividade) === String(p.atividade) && e.objetivo === p.objetivo
+        );
+        if (match) { activeProfileId = match.id; updateProfileBar(match); }
+        else if (history.length > 0) {
+          document.getElementById('profileSwitcherBar').style.display = 'flex';
+          document.getElementById('psActiveLabel').innerHTML = '<span style="color:var(--white-muted)">Perfil atual do servidor · clique para trocar</span>';
+        }
+      }
+    } catch (e) {
+      console.warn('Não foi possível carregar o perfil:', e);
+    }
+ 
+    // Sempre mostrar a barra se houver histórico local
+    const history = loadCalcHistory();
+    if (history.length > 0 && document.getElementById('profileSwitcherBar').style.display === 'none') {
+      document.getElementById('profileSwitcherBar').style.display = 'flex';
+    }
+  }
+ 
+  // ── Atualizar exibição da data ───────────────────────────────────────────
+  function updateDateDisplay() {
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('currentDate').innerText =
+      currentDate.toLocaleDateString('pt-BR', options);
+    loadMealsForDate();
+    loadWeeklyData();
+  }
+ 
+  // ── Carregar refeições do dia ────────────────────────────────────────────
+  async function loadMealsForDate() {
+    const token = localStorage.getItem('token');
+    if (!token) { meals = []; renderAll(); return; }
+    const dateKey = toISODate(currentDate);
+    try {
+      const res = await fetch(`${API_BASE}/diario/dia/${dateKey}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        meals = data.refeicoes.map(r => ({
+          id:       r.id,
+          name:     r.nome,
+          protein:  r.proteina,
+          carbs:    r.carbo,
+          fat:      r.gordura,
+          calories: r.calorias,
+          category: r.categoria,
+          date:     dateKey,
+        }));
+      } else {
+        meals = [];
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar diário:', e);
+      meals = [];
+    }
+    renderAll();
+  }
+ 
+  // ── Carregar dados reais da semana para o gráfico ───────────────────────
+  async function loadWeeklyData() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+ 
+    // Calcular segunda-feira da semana atual
+    const d = new Date(currentDate);
+    const day = d.getDay(); // 0=dom, 1=seg...
+    const diffToMonday = (day === 0) ? -6 : 1 - day;
+    d.setDate(d.getDate() + diffToMonday);
+    const dataInicio = toISODate(d);
+ 
+    // Labels reais da semana
+    const diasSemana = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+    weeklyLabels = diasSemana;
+ 
+    try {
+      const res = await fetch(
+        `${API_BASE}/diario/semana?data_inicio=${dataInicio}`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      if (res.ok) {
+        const dados = await res.json();
+        weeklyCaloriesData = dados.map(d => d.calorias);
+        updateCharts(); // atualizar gráfico com dados reais
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar semana:', e);
+    }
+  }
+ 
+  // ── Render principal ─────────────────────────────────────────────────────
+  function renderAll() {
+    calculateTotals();
+    renderMeals();
+    updateMacroCards();
+    updateAlerts();
+    updateCharts();
+  }
+ 
+  function calculateTotals() {
+    currentTotals = { calories: 0, protein: 0, carbs: 0, fat: 0 };
+    meals.forEach(meal => {
+      currentTotals.protein  += meal.protein;
+      currentTotals.carbs    += meal.carbs;
+      currentTotals.fat      += meal.fat;
+      // Usar as calorias salvas pela API (não recalcular)
+      currentTotals.calories += meal.calories;
+    });
+    // Arredondar
+    currentTotals.calories = Math.round(currentTotals.calories * 10) / 10;
+    currentTotals.protein  = Math.round(currentTotals.protein  * 10) / 10;
+    currentTotals.carbs    = Math.round(currentTotals.carbs    * 10) / 10;
+    currentTotals.fat      = Math.round(currentTotals.fat      * 10) / 10;
+  }
+ 
+  function updateMacroCards() {
+    const calPerc   = Math.min((currentTotals.calories / dailyGoals.calories) * 100, 100);
+    const protPerc  = Math.min((currentTotals.protein  / dailyGoals.protein)  * 100, 100);
+    const carbsPerc = Math.min((currentTotals.carbs    / dailyGoals.carbs)    * 100, 100);
+    const fatPerc   = Math.min((currentTotals.fat      / dailyGoals.fat)      * 100, 100);
+ 
+    document.getElementById('caloriesValue').innerText = Math.round(currentTotals.calories);
+    document.getElementById('proteinValue').innerText  = currentTotals.protein;
+    document.getElementById('carbsValue').innerText    = currentTotals.carbs;
+    document.getElementById('fatValue').innerText      = currentTotals.fat;
+ 
+    document.getElementById('caloriesFill').style.width = `${calPerc}%`;
+    document.getElementById('proteinFill').style.width  = `${protPerc}%`;
+    document.getElementById('carbsFill').style.width    = `${carbsPerc}%`;
+    document.getElementById('fatFill').style.width      = `${fatPerc}%`;
+ 
+    const calElement = document.getElementById('caloriesValue');
+    calElement.style.color = currentTotals.calories > dailyGoals.calories
+      ? 'var(--orange-warning)' : 'var(--white)';
+  }
+ 
+  // ── Autocomplete de alimentos ────────────────────────────────────────────
+  let searchTimeout;
+  document.getElementById('foodName').addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    const query = e.target.value.trim();
+    if (query.length < 2) {
+      document.getElementById('suggestions').style.display = 'none';
+      return;
+    }
+    searchTimeout = setTimeout(async () => {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch(
+          `${API_BASE}/alimento/buscar?q=${encodeURIComponent(query)}`,
+          { headers: { 'Authorization': `Bearer ${token}` } }
+        );
+        if (res.ok) {
+          const alimentos = await res.json();
+          const suggestionsDiv = document.getElementById('suggestions');
+          if (alimentos.length === 0) { suggestionsDiv.style.display = 'none'; return; }
+          suggestionsDiv.innerHTML = alimentos.map(a =>
+            `<div class="suggestion-item" onclick="selectFood('${escapeHtml(a.nome)}')">
+              ${escapeHtml(a.nome)} — ${a.calorias} kcal/100g
+            </div>`
+          ).join('');
+          suggestionsDiv.style.display = 'block';
+        }
+      } catch (e) {
+        console.error('Erro ao buscar alimentos:', e);
+      }
+    }, 300);
+  });
+ 
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.autocomplete-wrapper')) {
+      document.getElementById('suggestions').style.display = 'none';
+    }
+  });
+ 
+  window.selectFood = function(nome) {
+    document.getElementById('foodName').value = nome;
+    document.getElementById('suggestions').style.display = 'none';
+    document.getElementById('calculateBtn').click();
+  };
+ 
+  // ── Renderizar lista de refeições ────────────────────────────────────────
+  function renderMeals() {
+    if (meals.length === 0) {
+      mealsContainer.innerHTML = `
+        <div class="empty-state" style="text-align:center;padding:3rem;color:var(--white-muted);">
+          <div style="font-size:2rem;margin-bottom:1rem;">🍽️</div>
+          <p>Nenhuma refeição registrada hoje.</p>
+          <p style="font-size:0.85rem;margin-top:0.5rem;">Use o formulário ao lado para adicionar!</p>
+        </div>`;
+      return;
+    }
+ 
+    const categories = {
+      cafe:       '☕ Café da Manhã',
+      almoco:     '🍲 Almoço',
+      cafe_tarde: '🍎 Café da Tarde',
+      jantar:     '🌙 Jantar',
+      lanche:     '🥪 Lanche',
+      outro:      '🍽️ Outros',
+    };
+ 
+    const grouped = {};
+    meals.forEach(meal => {
+      const cat = meal.category || 'outro';
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(meal);
+    });
+ 
+    let html = '';
+    // Ordenar categorias por horário do dia
+    const order = ['cafe', 'almoco', 'cafe_tarde', 'lanche', 'jantar', 'outro'];
+    const sortedKeys = Object.keys(grouped).sort(
+      (a, b) => (order.indexOf(a) - order.indexOf(b))
+    );
+ 
+    for (const cat of sortedKeys) {
+      const catMeals = grouped[cat];
+      html += `
+        <div style="padding:0.8rem 1.5rem;background:var(--black-surface);border-bottom:1px solid var(--black-border);">
+          <span style="font-weight:600;color:var(--green-400);">${categories[cat] || cat}</span>
+        </div>`;
+      catMeals.forEach(meal => {
+        html += `
+          <div class="meal-item">
+            <div class="meal-info">
+              <span class="meal-name">${escapeHtml(meal.name)}</span>
+              <div class="meal-nutrients">
+                <span>🥩 <strong>${meal.protein}g</strong> prot</span>
+                <span>🍚 <strong>${meal.carbs}g</strong> carb</span>
+                <span>🫙 <strong>${meal.fat}g</strong> gord</span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:1rem;">
+              <span style="font-family:var(--font-head);font-size:1.1rem;font-weight:600;color:var(--green-400);">
+                ${Math.round(meal.calories)} kcal
+              </span>
+              <button class="delete-meal" onclick="deleteMeal(${meal.id})" title="Remover">✕</button>
+            </div>
+          </div>`;
+      });
+    }
+    mealsContainer.innerHTML = html;
+  }
+ 
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(String(text)));
+    return div.innerHTML;
+  }
+ 
+  // ── Calcular macros do alimento ──────────────────────────────────────────
+  let calculatedMacros = null;
+ 
+  document.getElementById('calculateBtn').addEventListener('click', async () => {
+    const foodName = document.getElementById('foodName').value.trim();
+    const weight   = parseFloat(document.getElementById('foodWeight').value);
+    if (!foodName || !(weight > 0)) {
+      showToast('Preencha o alimento e um peso válido', true);
+      return;
+    }
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`${API_BASE}/alimento/calcular`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ nome: foodName, peso: weight }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || 'Alimento não encontrado');
+      }
+      const data = await res.json();
+      calculatedMacros = {
+        name:     data.nome,
+        weight:   weight,
+        protein:  data.proteina,
+        carbs:    data.carbo,
+        fat:      data.gordura,
+        calories: data.calorias,
+      };
+      document.getElementById('resultName').textContent     = calculatedMacros.name;
+      document.getElementById('resultWeight').textContent   = calculatedMacros.weight;
+      document.getElementById('resultProtein').textContent  = calculatedMacros.protein.toFixed(1);
+      document.getElementById('resultCarbs').textContent    = calculatedMacros.carbs.toFixed(1);
+      document.getElementById('resultFat').textContent      = calculatedMacros.fat.toFixed(1);
+      document.getElementById('resultCalories').textContent = Math.round(calculatedMacros.calories);
+      document.getElementById('calcResult').style.display = 'block';
+    } catch (e) {
+      showToast(`❌ ${e.message}`, true);
+    }
+  });
+ 
+  document.getElementById('confirmAddBtn').addEventListener('click', async () => {
+    if (!calculatedMacros) return;
+    const category = document.getElementById('mealCategory').value;
+    const dateKey  = toISODate(currentDate);
+    const token    = localStorage.getItem('token');
+    try {
+      const res = await fetch(`${API_BASE}/diario/adicionar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          nome:     calculatedMacros.name,
+          proteina: calculatedMacros.protein,
+          carbo:    calculatedMacros.carbs,
+          gordura:  calculatedMacros.fat,
+          calorias: calculatedMacros.calories,
+          categoria: category,
+          data:     dateKey,
+        }),
+      });
+      if (!res.ok) throw new Error('Erro ao salvar');
+      document.getElementById('foodName').value          = '';
+      document.getElementById('foodWeight').value        = '100';
+      document.getElementById('calcResult').style.display = 'none';
+      calculatedMacros = null;
+      await loadMealsForDate();
+      await loadWeeklyData();
+      showToast('✅ Refeição adicionada!');
+    } catch (e) {
+      showToast(`❌ ${e.message}`, true);
+    }
+  });
+ 
+  // ── Deletar refeição ─────────────────────────────────────────────────────
+  window.deleteMeal = async function(id) {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/diario/refeicao/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (res.ok || res.status === 404) {
+        await loadMealsForDate();
+        await loadWeeklyData();
+        showToast('🗑️ Refeição removida');
+      } else {
+        showToast('❌ Erro ao remover refeição', true);
+      }
+    } catch (e) {
+      showToast('❌ Erro de conexão', true);
+    }
+  };
+ 
+  // ── Alertas nutricionais ─────────────────────────────────────────────────
+  function updateAlerts() {
+    let alerts = [];
+    if (currentTotals.calories > dailyGoals.calories) {
+      alerts.push(`⚠️ Você ultrapassou sua meta em ${Math.round(currentTotals.calories - dailyGoals.calories)} kcal.`);
+    } else if (currentTotals.calories < dailyGoals.calories * 0.7 && meals.length > 0) {
+      alerts.push(`🥗 Você está abaixo da meta calórica. Considere uma refeição nutritiva!`);
+    }
+    if (currentTotals.protein < dailyGoals.protein * 0.8 && meals.length > 0) {
+      alerts.push(`💪 Proteína abaixo da meta! Invista em frango, ovos ou leguminosas.`);
+    }
+    if (currentTotals.carbs > dailyGoals.carbs * 1.1) {
+      alerts.push(`🍚 Carboidratos acima do recomendado. Priorize carboidratos complexos.`);
+    }
+    if (alerts.length === 0 && meals.length > 0) {
+      alerts.push(`🎉 Parabéns! Você está dentro das metas nutricionais hoje!`);
+    } else if (meals.length === 0) {
+      alerts.push(`📝 Comece a registrar suas refeições para acompanhar seus macros!`);
+    }
+    alertContainer.innerHTML = alerts.map(alert => `
+      <div class="alert-card">
+        <div class="alert-icon">${alert.startsWith('⚠️') ? '⚠️' : alert.startsWith('🎉') ? '🎉' : '💡'}</div>
+        <div class="alert-text">${alert}</div>
+      </div>`).join('');
+  }
+ 
+  // ── Gráficos ─────────────────────────────────────────────────────────────
+  let macrosChart, weeklyChart;
+ 
+  function updateCharts() {
+    // Gráfico de rosca — macros do dia
+    const ctxMacros = document.getElementById('macrosChart').getContext('2d');
+    if (macrosChart) macrosChart.destroy();
+    macrosChart = new Chart(ctxMacros, {
+      type: 'doughnut',
+      data: {
+        labels: ['Proteínas (g)', 'Carboidratos (g)', 'Gorduras (g)'],
+        datasets: [{
+          data: [currentTotals.protein, currentTotals.carbs, currentTotals.fat],
+          backgroundColor: ['#22C76E', '#E6A017', '#C73B2B'],
+          borderColor: 'transparent',
+        }],
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: '#B8C4BC' } } },
+      },
+    });
+ 
+    // Gráfico de linha — histórico semanal REAL vindo da API
+    const ctxWeekly = document.getElementById('weeklyChart').getContext('2d');
+    if (weeklyChart) weeklyChart.destroy();
+ 
+    // Identificar qual coluna é hoje para destacar
+    const todayStr = toISODate(new Date());
+    const d = new Date(currentDate);
+    const dayOfWeek = d.getDay();
+    const diffToMonday = (dayOfWeek === 0) ? -6 : 1 - dayOfWeek;
+    const monday = new Date(d);
+    monday.setDate(d.getDate() + diffToMonday);
+    const weekDates = Array.from({ length: 7 }, (_, i) => {
+      const dt = new Date(monday);
+      dt.setDate(monday.getDate() + i);
+      return toISODate(dt);
+    });
+    const pointColors = weekDates.map(dt =>
+      dt === todayStr ? '#3DD68C' : 'rgba(61,214,140,0.4)'
+    );
+    const pointRadius = weekDates.map(dt => dt === todayStr ? 6 : 4);
+ 
+    weeklyChart = new Chart(ctxWeekly, {
+      type: 'line',
+      data: {
+        labels: weeklyLabels,
+        datasets: [{
+          label: 'Calorias (kcal)',
+          data: weeklyCaloriesData,
+          borderColor: '#22C76E',
+          backgroundColor: 'rgba(34,199,110,0.05)',
+          fill: true,
+          tension: 0.3,
+          pointBackgroundColor: pointColors,
+          pointRadius: pointRadius,
+        }, {
+          label: 'Meta',
+          data: Array(7).fill(dailyGoals.calories),
+          borderColor: 'rgba(230,160,23,0.4)',
+          borderDash: [6, 3],
+          pointRadius: 0,
+          fill: false,
+        }],
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: '#B8C4BC' } } },
+        scales: {
+          y: { grid: { color: '#2A302C' }, ticks: { color: '#7A8B80' }, beginAtZero: true },
+          x: { ticks: { color: '#7A8B80' } },
+        },
+      },
+    });
+  }
+ 
+  // ── Toast ─────────────────────────────────────────────────────────────────
+  function showToast(msg, isError = false) {
+    const existing = document.querySelector('.toast-msg');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast-msg';
+    toast.textContent = msg;
+    if (isError) toast.style.background = '#C73B2B';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+  }
+ 
+  // ── Navegação entre dias ──────────────────────────────────────────────────
+  document.getElementById('prevDayBtn').addEventListener('click', () => {
+    currentDate.setDate(currentDate.getDate() - 1);
+    updateDateDisplay();
+  });
+ 
+  document.getElementById('nextDayBtn').addEventListener('click', () => {
+    if (currentDate.toDateString() === new Date().toDateString()) {
+      showToast('Você não pode ir para o futuro!', true);
+      return;
+    }
+    currentDate.setDate(currentDate.getDate() + 1);
+    updateDateDisplay();
+  });
+ 
+  document.getElementById('foodName').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') document.getElementById('calculateBtn').click();
+  });
+ 
+  // ── Seletor de perfil ─────────────────────────────────────────────────────
+  const HISTORY_KEY = 'nutriai_calc_history';
+  const GOAL_LABELS_PS = {
+    perda_moderada: '🎯 Perda moderada', perda_leve: '🎯 Perda leve',
+    manutencao: '⚖️ Manutenção', ganho_leve: '💪 Ganho leve', ganho_moderado: '💪 Ganho moderado',
+  };
+  const ACTIVITY_LABELS_PS = {
+    '1.2':'Sedentário','1.375':'Lev. ativo','1.55':'Mod. ativo','1.725':'Muito ativo','1.9':'Extremo',
+  };
+  let activeProfileId = null;
+ 
+  function loadCalcHistory() {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
+    catch { return []; }
+  }
+ 
+  function updateProfileBar(entry) {
+    const bar = document.getElementById('profileSwitcherBar');
+    const label = document.getElementById('psActiveLabel');
+    if (!entry) { bar.style.display = 'none'; return; }
+    bar.style.display = 'flex';
+    label.innerHTML = `<span>${Math.round(entry.meta)} kcal/dia</span> · ${entry.peso}kg · ${entry.altura}cm · ${entry.idade}a · ${GOAL_LABELS_PS[entry.objetivo] || entry.objetivo} · <span style="color:var(--white-muted);font-size:0.72rem;">${entry.date}</span>`;
+  }
+ 
+  function openProfileModal() {
+    document.getElementById('psOverlay').classList.add('open');
+    renderProfileModal();
+  }
+ 
+  function closeProfileModal() {
+    document.getElementById('psOverlay').classList.remove('open');
+  }
+ 
+  function renderProfileModal() {
+    const body = document.getElementById('psModalBody');
+    const history = loadCalcHistory();
+    if (history.length === 0) {
+      body.innerHTML = `<div class="ps-empty">Nenhum cálculo no histórico ainda.<br>Use a <a href="calculadora.html" style="color:var(--green-400);">Calculadora</a> para gerar perfis.</div>`;
+      return;
+    }
+    body.innerHTML = history.map(e => `
+      <div class="ps-item ${e.id === activeProfileId ? 'active' : ''}" onclick="applyProfile(${e.id})">
+        <div class="ps-item-top">
+          <span class="ps-item-date">🕐 ${e.date}</span>
+          <span class="ps-item-badge">${GOAL_LABELS_PS[e.objetivo] || e.objetivo}</span>
+          ${e.id === activeProfileId ? '<span class="ps-item-badge" style="background:rgba(61,214,140,0.2);border-color:var(--green-400);">✓ Ativo</span>' : ''}
+        </div>
+        <div class="ps-item-values">
+          <div class="ps-val"><span>${e.tmb}</span><small>TMB</small></div>
+          <div class="ps-val"><span>${e.get}</span><small>GET</small></div>
+          <div class="ps-val"><span>${e.meta}</span><small>Meta kcal</small></div>
+        </div>
+        <div class="ps-item-params">
+          <b>${e.peso}kg</b> · <b>${e.altura}cm</b> · <b>${e.idade}a</b> · ${e.sexo === 'masculino' ? '♂ Masc.' : '♀ Fem.'} · ${ACTIVITY_LABELS_PS[String(e.atividade)] || e.atividade}
+        </div>
+      </div>
+    `).join('');
+  }
+ 
+  window.applyProfile = async function(id) {
+    const history = loadCalcHistory();
+    const entry = history.find(e => e.id === id);
+    if (!entry) return;
+ 
+    const body = document.getElementById('psModalBody');
+    body.innerHTML = '<div class="ps-loading">⏳ Aplicando perfil e salvando no servidor...</div>';
+ 
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`${API_BASE}/calculator/get`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          peso: entry.peso, altura: entry.altura, idade: entry.idade,
+          sexo: entry.sexo, atividade: entry.atividade, objetivo: entry.objetivo,
+        }),
+      });
+ 
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || `Erro ${res.status}`);
+      }
+ 
+      const r = await res.json();
+ 
+      // Atualizar metas locais e re-renderizar
+      dailyGoals = {
+        calories: Math.round(r.meta_calorica),
+        protein:  Math.round(r.macros_recomendados.proteina_g),
+        carbs:    Math.round(r.macros_recomendados.carboidrato_g),
+        fat:      Math.round(r.macros_recomendados.gordura_g),
+      };
+      document.getElementById('caloriesGoal').innerText = dailyGoals.calories;
+      document.getElementById('proteinGoal').innerText  = dailyGoals.protein;
+      document.getElementById('carbsGoal').innerText    = dailyGoals.carbs;
+      document.getElementById('fatGoal').innerText      = dailyGoals.fat;
+ 
+      // Atualizar badge de objetivo
+      const badgeEl = document.getElementById('goalBadge');
+      if (badgeEl) {
+        badgeEl.textContent = GOAL_LABELS_PS[entry.objetivo] || entry.objetivo;
+        badgeEl.style.display = 'inline-block';
+      }
+ 
+      activeProfileId = id;
+      updateProfileBar(entry);
+      renderAll(); // re-calcular barras de progresso com novas metas
+      closeProfileModal();
+      showToast('✅ Perfil aplicado e metas atualizadas!');
+ 
+    } catch (err) {
+      showToast(`❌ ${err.message}`, true);
+      renderProfileModal();
+    }
+  };
+ 
+  document.getElementById('switchProfileBtn').addEventListener('click', openProfileModal);
+  document.getElementById('psClose').addEventListener('click', closeProfileModal);
+  document.getElementById('psOverlay').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('psOverlay')) closeProfileModal();
+  });
+ 
+  // ── Inicialização ─────────────────────────────────────────────────────────
+  async function init() {
+    const token = localStorage.getItem('token');
+    if (!token) { window.location.href = 'login.html'; return; }
+ 
+    // 1. Carregar perfil → metas personalizadas
+    await loadUserProfile();
+    // 2. Mostrar data e carregar refeições do dia
+    updateDateDisplay();
+    // (loadWeeklyData é chamado dentro de updateDateDisplay via loadMealsForDate chain)
+  }
+ 
+  init();
+</script>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</body>
+</html>
+ 

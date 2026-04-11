@@ -1,0 +1,35 @@
+## render.yaml — Configuração dos serviços NutriAI no Render
+## Documentação: https://render.com/docs/render-yaml-reference
+
+services:
+  # ── Backend (FastAPI) ───────────────────────────────────────────────────────
+  - type: web
+    name: nutriai-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    plan: free
+    envVars:
+      - key: SECRET_KEY
+        sync: false          # preencha manualmente no painel do Render
+      - key: GROQ_API_KEY
+        sync: false          # preencha manualmente no painel do Render
+      - key: DATABASE_URL
+        fromDatabase:
+          name: nutriai-db
+          property: connectionString
+      - key: ALLOWED_ORIGINS
+        sync: false          # cole a URL do seu frontend do Render aqui
+
+  # ── Frontend (HTML estático) ────────────────────────────────────────────────
+  - type: web
+    name: nutriai-frontend
+    runtime: static
+    staticPublishPath: frontend
+    plan: free
+
+# ── Banco de dados PostgreSQL ───────────────────────────────────────────────
+databases:
+  - name: nutriai-db
+    plan: free
