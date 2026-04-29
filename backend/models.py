@@ -8,7 +8,7 @@ Regras:
 
 from sqlalchemy import (
     Column, DateTime, Float, ForeignKey,
-    Integer, String, Text, func,
+    Index, Integer, String, Text, func,
 )
 from database import Base
 
@@ -91,6 +91,11 @@ class DailyMeal(Base):
     categoria   = Column(String(50), default="outro")
     criado_em   = Column(DateTime, server_default=func.now(), nullable=False)
 
+    # Índice composto: todas as queries de diário filtram por (user_id, data)
+    __table_args__ = (
+        Index("ix_daily_meals_user_data", "user_id", "data"),
+    )
+
     def __repr__(self):
         return f"<DailyMeal id={self.id} data={self.data} nome={self.nome}>"
 
@@ -108,6 +113,11 @@ class ConversationMessage(Base):
     role        = Column(String(20), nullable=False)   # "user" ou "assistant"
     content     = Column(Text, nullable=False)
     criado_em   = Column(DateTime, server_default=func.now(), nullable=False)
+
+    # Índice composto: chatbot sempre filtra por user_id e ordena por criado_em
+    __table_args__ = (
+        Index("ix_conversation_user_time", "user_id", "criado_em"),
+    )
 
     def __repr__(self):
         return f"<Message id={self.id} role={self.role}>"
