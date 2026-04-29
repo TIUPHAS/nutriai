@@ -29,3 +29,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Arquivos de teste gerados
+test_*.db

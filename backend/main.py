@@ -73,6 +73,20 @@ app.include_router(alimento.router)
 def root():
     return {"status": "online", "versao": "2.1.0", "docs": "/docs"}
 
+
 @app.get("/health", tags=["status"])
 def health():
-    return {"status": "ok"}
+    from fastapi import HTTPException
+    from sqlalchemy import text
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        db_status = "ok"
+    except Exception as exc:
+        logger.error("Health check: DB unreachable — %s", exc)
+        db_status = "error"
+
+    if db_status == "error":
+        raise HTTPException(status_code=503, detail={"status": "degraded", "db": db_status})
+
+    return {"status": "ok", "db": db_status}
