@@ -8,7 +8,9 @@ Documentação interativa:
     http://localhost:8000/docs
 """
 
+import logging
 import os
+
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,9 +20,14 @@ from slowapi.middleware import SlowAPIMiddleware
 
 from database import Base, engine
 from limiter import limiter
+from logging_config import setup_logging
+from middleware import RequestLoggingMiddleware
 from routes import auth, calculadora, chatbot, diario, historico, alimento
 
 load_dotenv()
+setup_logging(os.getenv("LOG_LEVEL", "INFO"))
+
+logger = logging.getLogger("nutriai.main")
 
 app = FastAPI(
     title="NutriAI API",
@@ -31,6 +38,7 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
+app.add_middleware(RequestLoggingMiddleware)
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
 ALLOWED_ORIGINS = os.getenv(
@@ -49,8 +57,8 @@ app.add_middleware(
 # ── Banco de dados ────────────────────────────────────────────────────────────
 @app.on_event("startup")
 def criar_tabelas():
-    """Cria todas as tabelas definidas em models.py caso não existam."""
     Base.metadata.create_all(bind=engine)
+    logger.info("Banco de dados inicializado. Servidor pronto.")
 
 # ── Rotas ─────────────────────────────────────────────────────────────────────
 app.include_router(auth.router)
