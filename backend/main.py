@@ -12,8 +12,12 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from database import Base, engine
+from limiter import limiter
 from routes import auth, calculadora, chatbot, diario, historico, alimento
 
 load_dotenv()
@@ -23,6 +27,10 @@ app = FastAPI(
     version="2.1.0",
     description="Backend do NutriAI — planos alimentares e chatbot nutricional com IA.",
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
 ALLOWED_ORIGINS = os.getenv(

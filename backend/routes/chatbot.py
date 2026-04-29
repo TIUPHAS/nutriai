@@ -9,12 +9,13 @@ Endpoints:
  
 import os
 from dotenv import load_dotenv
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from groq import Groq
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
- 
+
 from dependencies import get_current_user_id, get_db
+from limiter import limiter
 from models import ConversationMessage
  
 load_dotenv()
@@ -53,7 +54,7 @@ Seja conciso: respostas entre 3-8 parágrafos. Use listas quando ajudar a clarez
  
  
 class MensagemInput(BaseModel):
-    mensagem: str
+    mensagem: str = Field(..., min_length=1, max_length=2000)
  
  
 def _get_context(user_id: int, db: Session) -> list[dict]:
@@ -127,7 +128,9 @@ def _call_groq(messages: list[dict], system_prompt: str) -> str:
  
  
 @router.post("/mensagem")
-def enviar_mensagem(
+@limiter.limit("15/minute")
+async def enviar_mensagem(
+    request: Request,
     payload: MensagemInput,
     user_id: int = Depends(get_current_user_id),
     db: Session = Depends(get_db),

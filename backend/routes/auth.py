@@ -4,11 +4,12 @@ Usa dependencies.py — sem duplicação de get_db ou SECRET_KEY.
 """
 
 import bcrypt
-from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, EmailStr, field_validator
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from sqlalchemy.orm import Session
 
-from dependencies import get_db, create_access_token  # ✅ CORRIGIDO: import do dependencies
+from dependencies import get_db, create_access_token
+from limiter import limiter
 from models import User
 
 router = APIRouter(prefix="/auth", tags=["autenticacao"])
@@ -17,9 +18,9 @@ router = APIRouter(prefix="/auth", tags=["autenticacao"])
 # ── Schemas de entrada ────────────────────────────────────────────────────────
 
 class UserRegister(BaseModel):
-    nome: str
+    nome: str = Field(..., min_length=2, max_length=120)
     email: EmailStr
-    senha: str
+    senha: str = Field(..., min_length=6, max_length=128)
 
     @field_validator("nome")
     @classmethod
@@ -28,23 +29,17 @@ class UserRegister(BaseModel):
             raise ValueError("Nome deve ter pelo menos 2 caracteres.")
         return v.strip()
 
-    @field_validator("senha")
-    @classmethod
-    def senha_minima(cls, v: str) -> str:
-        if len(v) < 6:
-            raise ValueError("Senha deve ter pelo menos 6 caracteres.")
-        return v
-
 
 class UserLogin(BaseModel):
     email: EmailStr
-    senha: str
+    senha: str = Field(..., max_length=128)
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
-def register(payload: UserRegister, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+async def register(request: Request, payload: UserRegister, db: Session = Depends(get_db)):
     """Cria um novo usuário. Retorna 400 se email já cadastrado."""
     
     # Verificar se email já existe
@@ -79,7 +74,8 @@ def register(payload: UserRegister, db: Session = Depends(get_db)):
 
 
 @router.post("/login")
-def login(payload: UserLogin, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+async def login(request: Request, payload: UserLogin, db: Session = Depends(get_db)):
     """Autentica e retorna JWT."""
     
     # Buscar usuário
